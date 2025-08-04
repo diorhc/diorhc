@@ -32,8 +32,8 @@
     <div align="right">
         <img src="https://github-readme-stats.vercel.app/api/top-langs?username=diorhc&locale=en&hide_title=true&layout=compact&card_width=300&langs_count=6&theme=tokyonight&hide_border=true&bg_color=0D1117" height="180" alt="Top Languages" />
     </div>
-    <a href="#"><img src="https://img.shields.io/static/v1?message=YouTube&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="YouTube" /></a>
-        <a href="#"><img src="https://img.shields.io/static/v1?message=Instagram&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Instagram" /></a>
+    <a href="www.youtube.com/@diore"><img src="https://img.shields.io/static/v1?message=YouTube&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="YouTube" /></a>
+        <a href="www.instagram.com/dior.hcr"><img src="https://img.shields.io/static/v1?message=Instagram&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Instagram" /></a>
 </div>
 
 ###
