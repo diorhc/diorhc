@@ -5,7 +5,7 @@
     </svg>    
     <h2 style="margin-top: 0.5em; font-size: 2em; font-weight: bold; color: #c792ea;">Dior E</h2>    
     <div align="right">
-    <img src="https://github-readme-stats.vercel.app/api/top-langs?username=maurodesouza&locale=en&hide_title=false&layout=compact&card_width=320&langs_count=5&theme=dracula&hide_border=false" height="150" alt="Top Languages" />
+    <img src="https://github-readme-stats.vercel.app/api/top-langs?username=diorhc&locale=en&hide_title=false&layout=compact&card_width=320&langs_count=5&theme=dracula&hide_border=false" height="150" alt="Top Languages" />
     </div>
 </div>
 
@@ -32,5 +32,8 @@
 </div>
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/maurodesouza/maurodesouza/output/snake.svg" alt="Snake animation" />
+  <img src="https://raw.githubusercontent.com/diorhc/diorhc/output/snake.svg" alt="Snake animation" />
 </p>
+
+<!-- Or, for maximum Markdown compatibility, use: -->
+<!-- ![Snake animation](https://raw.githubusercontent.com/diorhc/diorhc/output/snake.svg) -->
