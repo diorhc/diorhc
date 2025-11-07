@@ -5,10 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Портфолио разработчика - мои проекты и навыки"
+      content="Diorhc - Разработчик и создатель скриптов. Портфолио с проектами: YouTube Enhancement Script, Telegram Enhancement Script, YTDL и MyPort Bot."
     />
+    <meta
+      name="keywords"
+      content="разработчик, программист, JavaScript, Python, UserScript, Telegram Bot, веб-разработка, portfolio"
+    />
+    <meta name="author" content="Diorhc" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Diorhc - Разработчик | Portfolio" />
+    <meta
+      property="og:description"
+      content="Портфолио разработчика - создатель скриптов, веб-приложений и ботов"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://github.com/diorhc" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Diorhc - Разработчик | Portfolio" />
+    <meta
+      name="twitter:description"
+      content="Портфолио разработчика - создатель скриптов, веб-приложений и ботов"
+    />
+
     <link rel="icon" type="image/x-icon" href="assets/by.svg" />
-    <title>Dior E</title>
+    <title>Diorhc - Разработчик | Portfolio</title>
     <link rel="stylesheet" href="assets/styles.css" />
     <link
       rel="stylesheet"
@@ -24,66 +47,103 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
       <div class="container">
         <div class="logo">
           <span class="logo-text">Diorhc</span>
         </div>
         <ul class="nav-links">
-          <li><a href="#home">Главная</a></li>
-          <li><a href="#about">О себе</a></li>
-          <li><a href="#projects">Проекты</a></li>
-          <li><a href="#skills">Навыки</a></li>
-          <li><a href="#contact">Контакты</a></li>
+          <li>
+            <a href="#home" aria-label="Перейти к главной секции">Главная</a>
+          </li>
+          <li>
+            <a href="#about" aria-label="Перейти к секции о себе">О себе</a>
+          </li>
+          <li>
+            <a href="#projects" aria-label="Перейти к секции проектов"
+              >Проекты</a
+            >
+          </li>
+          <li>
+            <a href="#skills" aria-label="Перейти к секции навыков">Навыки</a>
+          </li>
+          <li>
+            <a href="#contact" aria-label="Перейти к секции контактов"
+              >Контакты</a
+            >
+          </li>
         </ul>
-        <div class="burger">
+        <button
+          class="burger"
+          aria-label="Открыть мобильное меню"
+          aria-expanded="false"
+        >
           <div class="line1"></div>
           <div class="line2"></div>
           <div class="line3"></div>
-        </div>
+        </button>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="hero">
+    <section id="home" class="hero" aria-labelledby="hero-title">
       <div class="container">
         <div class="hero-content">
-          <h1 class="hero-title">
-            <span class="wave">👋</span> Привет, я
+          <h1 id="hero-title" class="hero-title">
+            <span class="wave" role="img" aria-label="Приветственный жест"
+              >👋</span
+            >
+            Привет, я
             <span class="gradient-text">Diorhc</span>
           </h1>
           <p class="hero-subtitle">
             Разработчик | Создатель скриптов | Open Source энтузиаст
           </p>
           <div class="hero-buttons">
-            <a href="#projects" class="btn btn-primary">Мои проекты</a>
-            <a href="#contact" class="btn btn-secondary">Связаться</a>
+            <a
+              href="#projects"
+              class="btn btn-primary"
+              aria-label="Посмотреть мои проекты"
+              >Мои проекты</a
+            >
+            <a
+              href="#contact"
+              class="btn btn-secondary"
+              aria-label="Связаться со мной"
+              >Связаться</a
+            >
           </div>
-          <div class="social-links">
+          <div class="social-links" role="list" aria-label="Социальные сети">
             <a
               href="https://github.com/diorhc"
               target="_blank"
+              rel="noopener noreferrer"
               class="social-icon"
+              aria-label="Посетить мой профиль на GitHub"
             >
-              <i class="fab fa-github"></i>
+              <i class="fab fa-github" aria-hidden="true"></i>
             </a>
             <a
               href="https://t.me/bydiore_bot"
               target="_blank"
+              rel="noopener noreferrer"
               class="social-icon"
+              aria-label="Связаться через Telegram"
             >
-              <i class="fab fa-telegram"></i>
+              <i class="fab fa-telegram" aria-hidden="true"></i>
             </a>
             <a
               href="https://greasyfork.org/ru/users/1407054-diorhc"
               target="_blank"
+              rel="noopener noreferrer"
               class="social-icon"
+              aria-label="Посмотреть мои скрипты на Greasy Fork"
             >
-              <i class="fas fa-code"></i>
+              <i class="fas fa-code" aria-hidden="true"></i>
             </a>
           </div>
         </div>
-        <div class="hero-image">
+        <div class="hero-image" aria-hidden="true">
           <div class="code-animation">
             <div class="code-line"></div>
             <div class="code-line"></div>
@@ -406,10 +466,14 @@
     </footer>
 
     <!-- Scroll to Top Button -->
-    <button class="scroll-to-top" id="scrollToTop">
-      <i class="fas fa-arrow-up"></i>
+    <button
+      class="scroll-to-top"
+      id="scrollToTop"
+      aria-label="Прокрутить к началу страницы"
+    >
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
     </button>
 
-    <script src="assets/script.js"></script>
+    <script src="assets/script.js" defer></script>
   </body>
 </html>
