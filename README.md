@@ -1,40 +1,38 @@
-<div align="center">     
-    <pre>
- ██████╗ ██████╗ ███████╗███╗   ██╗    ███████╗ ██████╗ ██╗   ██╗██████╗  ██████╗███████╗
-██╔═══██╗██╔══██╗██╔════╝████╗  ██║    ██╔════╝██╔═══██╗██║   ██║██╔══██╗██╔════╝██╔════╝
-██║   ██║██████╔╝█████╗  ██╔██╗ ██║    ███████╗██║   ██║██║   ██║██████╔╝██║     █████╗  
-██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║    ╚════██║██║   ██║██║   ██║██╔══██╗██║     ██╔══╝  
-╚██████╔╝██║     ███████╗██║ ╚████║    ███████║╚██████╔╝╚██████╔╝██║  ██║╚██████╗███████╗
- ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚══════╝
-    </pre>
+<div align="center">
+    <img src="assets/dc.webp" height="250" />
 </div>
+
+<h1 align="center" style="border: none; font-size: 2.5rem; margin-bottom: 0;">
+  Hi <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="30px" />, I'm Dior E
+</h1>
+
+<p align="center" style="border: none; font-weight: normal; font-size: 1.5rem;">
+  I'm a passionate developer specializing in creating user scripts, web applications, and bots.
+</p>
+<p align="center" style="border: none; font-weight: normal; font-size: 1.5rem;">
+  I love solving complex problems and creating useful tools that make users' lives easier. I actively participate in open-source projects and share my work with the community.
+</p>
 
 ###
 
-<div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-    <div align="left">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" height="30" alt="HTML5" title="HTML5" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" height="30" alt="CSS3" title="CSS3" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" height="30" alt="JavaScript" title="JavaScript" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" height="30" alt="TypeScript" title="TypeScript" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="30" alt="Python" title="Python" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg" height="30" alt="Vue.js" title="Vue.js" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" height="30" alt="React" title="React" />
-        <img width="12" />
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" height="30" alt="Node.js" title="Node.js" />        
-    </div>
-    <div align="right">
-        <img src="https://github-readme-stats.vercel.app/api/top-langs?username=diorhc&locale=en&hide_title=true&layout=compact&card_width=300&langs_count=6&theme=tokyonight&hide_border=true&bg_color=0D1117" height="180" alt="Top Languages" />
-    </div>
-    <a href="https://youtube.com/@diore" target="_blank"><img src="https://img.shields.io/static/v1?message=YouTube&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="YouTube" /></a>
-        <a href="https://instagram.com/dior.hcr" target="_blank"><img src="https://img.shields.io/static/v1?message=Instagram&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Instagram" /></a>
-</div>
+<p align="center">
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=html,css,js,ts,github,react,python,vue,nodejs&theme=light&perline=12" />
+  </a>
+</p>
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=diorhc&show_icons=true&count_private=true&theme=transparent&hide_border=true&hide_title=true" width="45%" alt="Github stats"/>
+  <img src="https://git-hub-streak-stats.vercel.app?user=diorhc&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D" width="45%"  alt="Github streak"/>
+</p>
+
+<a href="https://diorhc.github.io/diorhc/"><img src="" alt="Open Website" /></a>
+
+<p align="center">
+<a href="https://youtube.com/@diore" target="_blank"><img src="https://img.shields.io/static/v1?message=YouTube&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="YouTube" /></a>
+<a href="https://instagram.com/dior.hcr" target="_blank"><img src="https://img.shields.io/static/v1?message=Instagram&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Instagram" /></a>
+<a href="https://boosty.to/diore" target="_blank"><img src="https://img.shields.io/static/v1?message=Boosty&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Boosty" /></a>
+<a href="https://t.me/diorhc" target="_blank"><img src="https://img.shields.io/static/v1?message=Telegram&logo=telegram&label=&color=2CA5E0&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Telegram" /></a>
+</p>
 
 ###
 
