@@ -1436,10 +1436,35 @@ const preloadResource = (href, as, type = null) => {
 // ===== Service Worker Registration =====
 if ("serviceWorker" in navigator && window.location.protocol === "https:") {
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("sw.js")
-      .then((reg) => console.log("Service Worker registered:", reg.scope))
-      .catch((err) => console.warn("Service Worker registration failed:", err));
+    // Try a few locations for the service worker file. Some deployments
+    // serve the worker at the site root (`/sw.js`) while others keep it
+    // under `/assets/sw.js`. We attempt both so the app works regardless
+    // of where the file was deployed. The scope will be the default for
+    // each file location (don't force `/` for workers not at the root).
+    (async () => {
+      const candidates = ["/sw.js", "/assets/sw.js", "assets/sw.js"];
+      let registered = false;
+      for (const path of candidates) {
+        try {
+          const reg = await navigator.serviceWorker.register(path);
+          console.log(
+            "Service Worker registered:",
+            reg.scope,
+            "(via",
+            path + ")"
+          );
+          registered = true;
+          break;
+        } catch (err) {
+          console.warn("Service Worker registration failed for", path, err);
+        }
+      }
+      if (!registered) {
+        console.warn(
+          "No Service Worker could be registered; none of the candidate paths succeeded."
+        );
+      }
+    })();
   });
 }
 
