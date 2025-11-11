@@ -1,4 +1,10 @@
 ﻿@import url("https://fonts.googleapis.com/css2?family=Boldonse&display=swap");
+/* ===== CSS Custom Properties for Mobile Viewport ===== */
+:root {
+  /* Fix for mobile viewport height (handles address bar) */
+  --vh: 1vh;
+}
+
 /* ===== Global Styles & Reset ===== */
 *,
 *::before,
@@ -47,22 +53,165 @@
   --text-secondary: #475569;
 }
 
-/* ===== Loading Screen ===== */
+/* From Uiverse.io by elijahgummer */
+.loader {
+  width: 48px;
+  height: 48px;
+  transform: rotate(0deg);
+  animation: spin 2.4s linear infinite;
+}
+
+.loader line {
+  stroke: #ffffff; /* White color for better visibility */
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.8;
+  stroke-dasharray: 10;
+  stroke-dashoffset: 10;
+  animation: dash 2.4s ease-in-out infinite;
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 10;
+    opacity: 0.8;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 0.4;
+  }
+  100% {
+    stroke-dashoffset: 10;
+    opacity: 0.8;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Mobile-specific optimizations ===== */
+/* Prevent text selection on touch interactions */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  .btn,
+  .nav-node,
+  .social-icon,
+  .project-option,
+  .card {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Improve touch targets */
+  a,
+  button,
+  input,
+  textarea {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Disable hover effects on touch devices */
+  .btn:hover::before,
+  .social-icon:hover,
+  .card:not(.active):hover {
+    transform: none;
+  }
+
+  /* Optimize animations for mobile performance */
+  .gradient-orb {
+    will-change: auto;
+    animation: none;
+  }
+
+  .code-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Landscape mode on mobile */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .hero {
+    min-height: auto;
+    padding: 2rem 0;
+  }
+
+  .hero .container {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .hero-image {
+    order: 2;
+  }
+
+  .code-animation {
+    height: 200px;
+  }
+
+  /* Ensure the hero code block fits the phone viewport and doesn't overflow */
+  .hero-image {
+    overflow: hidden; /* prevent any internal transforms from bleeding out */
+  }
+
+  .hero-image .code-animation {
+    width: calc(100% - 10.5rem);
+    max-width: 350px; /* limit extreme wide cards on narrow phones */
+    margin: 0 auto; /* center inside the container */
+    box-sizing: border-box;
+    border-radius: 14px;
+    padding: 0.6rem; /* compact padding on phones */
+    height: 160px; /* slightly smaller to save vertical space */
+  }
+
+  /* Reduce hero image/card size on small phones to avoid excessive vertical space */
+  .hero {
+    padding: 2rem 0 1rem;
+  }
+
+  .hero-image {
+    padding: 0;
+  }
+
+  .hero-image .code-animation {
+    height: 160px; /* smaller, fits most phones */
+    padding: 0.6rem;
+    width: min(100%, 520px);
+  }
+
+  section {
+    padding: 2rem 0;
+  }
+
+  .contact-canvas-wrapper {
+    height: 200px;
+  }
+}
+
+/* ===== Loading Screen (overlay wrapper) ===== */
 .loading-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--darker-bg);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  background: var(--darker-bg);
   z-index: 9999;
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.7s var(--ease-out-quint),
-    transform 0.7s var(--ease-out-quint), visibility 0.7s;
+  transition: opacity 0.6s var(--ease-out-quint),
+    transform 0.6s var(--ease-out-quint), visibility 0.6s;
 }
 
 .loading-screen.hidden {
@@ -72,34 +221,12 @@
   pointer-events: none;
 }
 
-.loader {
-  text-align: center;
-}
-
-.loader-circle {
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(99, 102, 241, 0.2);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-  margin: 0 auto 20px;
-}
-
-.loader-text {
-  color: var(--text-primary);
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+/* Ensure loader SVG is visually centered and preserved */
+.loading-screen .loader {
+  z-index: 10000;
 }
 
 /* ===== Theme Toggle Button ===== */
-
 .theme-toggle {
   position: fixed;
   top: 30px;
@@ -343,7 +470,7 @@ body {
   background: var(--gradient-3);
   top: 50%;
   right: -10%;
-  animation-delay: 7s;
+  animation-delay: 1s;
 }
 
 .orb-3 {
@@ -352,7 +479,7 @@ body {
   background: var(--gradient-2);
   bottom: -10%;
   left: 30%;
-  animation-delay: 14s;
+  animation-delay: 2s;
 }
 
 @keyframes float {
@@ -1547,6 +1674,13 @@ section.out-of-view .section-item {
   margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
 .contact-text {
   font-size: 1.2rem;
   color: var(--text-secondary);
@@ -1555,7 +1689,7 @@ section.out-of-view .section-item {
   line-height: 1.8;
 }
 
-/* Contact section: animated entrances for title, board, form and info */
+/* Contact section: animated entrances for title, canvas, textarea and info */
 .section-title {
   /* ensure titles generally animate from above when entering */
   opacity: 1; /* keep default elsewhere; specific section rules below will control contact */
@@ -1573,28 +1707,79 @@ section#contact.in-view .section-title {
   transform: translateY(0) scale(1);
 }
 
-#contact-board {
+.contact-canvas-wrapper {
   opacity: 0;
   transform: translateX(50px) scale(0.95);
   transition: transform 0.9s var(--ease-out-expo), opacity 0.7s ease-out 0.1s;
   will-change: transform, opacity;
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  /* spacing below the canvas so textarea/info don't stick to it */
+  margin-bottom: 1.5rem;
 }
-#contact-board.enter,
-section#contact.in-view #contact-board {
+
+.contact-canvas-wrapper.enter,
+section#contact.in-view .contact-canvas-wrapper {
   opacity: 1;
   transform: translateX(0) scale(1);
 }
 
-#contact-form {
+.contact-canvas-wrapper canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.contact-textarea-wrapper {
   opacity: 0;
   transform: translateX(-50px) scale(0.95);
   transition: transform 0.9s var(--ease-out-expo), opacity 0.7s ease-out 0.15s;
   will-change: transform, opacity;
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: 88px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 8px;
+  margin-bottom: 1.25rem;
 }
-#contact-form.enter,
-section#contact.in-view #contact-form {
+
+.contact-textarea-wrapper.enter,
+section#contact.in-view .contact-textarea-wrapper {
   opacity: 1;
   transform: translateX(0) scale(1);
+}
+
+.contact-textarea-wrapper > div {
+  width: 100%;
+  height: 100%;
+}
+
+.contact-textarea-wrapper textarea {
+  width: 100%;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: none;
+  transition: all 0.3s ease;
+}
+
+.contact-textarea-wrapper textarea:focus {
+  outline: none;
 }
 
 .contact-info {
@@ -1602,7 +1787,9 @@ section#contact.in-view #contact-form {
   transform: translateY(40px) scale(0.96);
   transition: transform 0.9s var(--ease-out-expo), opacity 0.7s ease-out 0.2s;
   will-change: transform, opacity;
+  grid-column: 1 / -1;
 }
+
 .contact-info.enter,
 section#contact.in-view .contact-info {
   opacity: 1;
@@ -1611,8 +1798,8 @@ section#contact.in-view .contact-info {
 
 @media (prefers-reduced-motion: reduce) {
   #contact .section-title,
-  #contact-board,
-  #contact-form,
+  .contact-canvas-wrapper,
+  .contact-textarea-wrapper,
   .contact-info {
     transition: none !important;
     transform: none !important;
@@ -1826,195 +2013,6 @@ section#contact.in-view .contact-info {
   }
 }
 
-/* ===== Footer ===== */
-.footer {
-  /* Make footer overlay content instead of reserving space */
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  z-index: 900;
-  background: linear-gradient(
-    180deg,
-    rgba(2, 6, 23, 0.6),
-    rgba(15, 23, 42, 0.6)
-  );
-  padding: 2.25rem 0 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
-  /* hide off-screen when not visible so it doesn't occupy layout space */
-  transform: translateY(110%);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 520ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 420ms ease;
-}
-
-.footer.visible {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.footer-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.footer-top {
-  display: grid;
-  grid-template-columns: 1fr auto 200px;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.footer-brand {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.footer-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 8px;
-}
-
-.footer-title {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-}
-
-.footer-desc {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.footer-links nav {
-  display: flex;
-  gap: 1.1rem;
-  align-items: center;
-}
-
-.footer-links a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: all 220ms ease;
-}
-
-.footer-links a:hover {
-  color: var(--text-primary);
-  background: rgba(99, 102, 241, 0.06);
-  transform: translateY(-3px);
-}
-
-.footer-social {
-  display: flex;
-  gap: 0.8rem;
-  justify-self: end;
-}
-
-.footer-social a {
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--text-primary);
-  transition: transform 220ms ease, box-shadow 220ms ease;
-}
-
-.footer-social a:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  background: var(--gradient-1);
-}
-
-.footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-  padding-top: 1rem;
-}
-
-.footer-bottom .copyright {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-}
-
-.footer-bottom .made {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-@media (max-width: 800px) {
-  .footer-top {
-    grid-template-columns: 1fr;
-    text-align: left;
-  }
-
-  .footer-social {
-    justify-self: start;
-  }
-
-  .footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-/* Light theme adjustments for footer */
-[data-theme="light"] .footer {
-  background: linear-gradient(
-    180deg,
-    rgba(248, 250, 252, 0.96),
-    rgba(241, 245, 249, 0.96)
-  );
-  border-top: 1px solid rgba(16, 24, 40, 0.06);
-  color: var(--text-secondary);
-}
-
-[data-theme="light"] .footer .footer-logo {
-  background: rgba(16, 24, 40, 0.03);
-}
-
-[data-theme="light"] .footer-links a {
-  color: var(--text-secondary);
-}
-
-[data-theme="light"] .footer-links a:hover {
-  color: var(--text-primary);
-  background: rgba(99, 102, 241, 0.08);
-}
-
-[data-theme="light"] .footer-social a {
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text-primary);
-  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
-}
-
-[data-theme="light"] .footer-social a:hover {
-  background: var(--gradient-1);
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
-}
-
-[data-theme="light"] .footer-bottom {
-  border-top: 1px solid rgba(16, 24, 40, 0.04);
-}
-
 /* ===== Scroll to Top Button ===== */
 .scroll-to-top {
   position: fixed;
@@ -2040,7 +2038,7 @@ section#contact.in-view .contact-info {
   transform: translateY(20px) scale(0.8);
   transition: transform 0.5s var(--ease-out-expo), opacity 0.4s ease,
     visibility 0.4s, box-shadow 0.4s var(--ease-out-quint);
-  z-index: 999;
+  z-index: 1102;
   box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
   backdrop-filter: blur(8px) saturate(120%);
   -webkit-backdrop-filter: blur(8px) saturate(120%);
@@ -2093,6 +2091,68 @@ section#contact.in-view .contact-info {
 }
 
 /* ===== Responsive Design ===== */
+
+/* Tablet and below (1024px and below) */
+@media screen and (max-width: 1024px) {
+  .container {
+    max-width: 90%;
+    padding: 0 1.5rem;
+  }
+
+  .hero .container {
+    gap: 3rem;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .code-animation {
+    height: 320px;
+  }
+
+  .about-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Projects section improvements */
+  .expanding-cards {
+    gap: 12px;
+  }
+
+  .project-option {
+    min-height: 90px;
+  }
+
+  .project-option.active .project-main {
+    font-size: 2.2rem;
+  }
+
+  /* Skills carousel */
+  .card {
+    max-width: 350px;
+    padding: 2rem 1.5rem;
+  }
+
+  /* Contact section */
+  .contact-canvas-wrapper {
+    height: 350px;
+  }
+
+  .contact-textarea-wrapper textarea {
+    height: 48px;
+  }
+}
+
 @media screen and (max-width: 968px) {
   .hero .container {
     grid-template-columns: 1fr;
@@ -2112,15 +2172,33 @@ section#contact.in-view .contact-info {
   }
 
   .about-stats {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .skills-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Improve touch targets */
+  .btn {
+    min-height: 44px;
+    padding: 0.8rem 2rem;
+  }
+
+  .social-icon {
+    min-width: 48px;
+    min-height: 48px;
+  }
 }
 
 @media screen and (max-width: 768px) {
+  /* Container spacing */
+  .container {
+    max-width: 95%;
+    padding: 0 1rem;
+  }
+
+  /* Navigation - handle if exists */
   .nav-links {
     position: fixed;
     right: 0;
@@ -2157,24 +2235,65 @@ section#contact.in-view .contact-info {
     transform: rotate(45deg) translate(-5px, -6px);
   }
 
+  /* Hero section */
+  .hero {
+    min-height: auto;
+    padding: 4rem 0 3rem;
+  }
+
   .hero-title {
     font-size: 2rem;
+    line-height: 1.2;
   }
 
   .hero-subtitle {
     font-size: 1rem;
+    margin: 1rem 0;
   }
 
   .hero-buttons {
     flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
   }
 
+  .hero-buttons .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .social-links {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .code-animation {
+    height: 250px;
+  }
+
+  /* Section titles */
   .section-title {
     font-size: 2rem;
+    margin-bottom: 2rem;
   }
 
+  section {
+    padding: 3rem 0;
+  }
+
+  /* About section */
   .about-stats {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem;
+  }
+
+  .about-description {
+    font-size: 1rem;
+    line-height: 1.8;
   }
 
   /* Expanding Cards - Mobile */
@@ -2193,6 +2312,7 @@ section#contact.in-view .contact-info {
     min-height: 120px;
     width: 100%;
     flex: unset !important;
+    border-radius: 16px;
   }
 
   .project-option:hover {
@@ -2210,6 +2330,16 @@ section#contact.in-view .contact-info {
   .project-option.active .project-label {
     bottom: 20px;
     left: 20px;
+  }
+
+  /* Vertical title for collapsed cards */
+  .project-option::before {
+    font-size: 1.2rem;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    writing-mode: horizontal-tb;
+    text-align: center;
   }
 
   .project-icon-wrapper {
@@ -2235,6 +2365,11 @@ section#contact.in-view .contact-info {
     font-size: 0.95rem;
   }
 
+  .project-tech-mini {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   .project-tech-mini span {
     font-size: 0.8rem;
     padding: 6px 12px;
@@ -2243,60 +2378,272 @@ section#contact.in-view .contact-info {
   .project-link-btn {
     font-size: 0.9rem;
     padding: 10px 20px;
+    min-height: 44px;
+  }
+
+  .project-links-group {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Skills carousel */
+  .skills-carousel {
+    padding: 2rem 0;
+  }
+
+  .card {
+    max-width: 320px;
+    min-height: 380px;
+    padding: 2rem 1.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.6rem;
+  }
+
+  .card p {
+    font-size: 0.95rem;
+  }
+
+  /* Contact section */
+  .contact-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .contact-canvas-wrapper {
+    width: 100%;
+    height: 300px;
+    order: 1;
+  }
+
+  .contact-textarea-wrapper {
+    width: 100%;
+    order: 2;
+  }
+
+  .contact-textarea-wrapper textarea {
+    height: 50px;
+    font-size: 0.95rem;
+  }
+
+  .contact-info {
+    order: 3;
   }
 
   .contact-methods {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .contact-method {
+    padding: 1.25rem;
+  }
+
+  /* Scroll to top button - adjust for mobile nav */
+  .scroll-to-top {
+    width: 48px;
+    height: 48px;
+    bottom: 5.5rem; /* Above mobile nav */
+    right: 1.5rem;
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    width: 48px;
+    height: 48px;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  /* Glass title background */
+  .glass-title {
+    font-size: clamp(40px, 12vw, 100px);
+  }
+
+  /* Adjust animated background for mobile */
+  .gradient-orb {
+    opacity: 0.4;
+  }
+
+  /* Improve code animation visibility */
+  .code-animation {
+    border-radius: 12px;
+  }
+
+  /* Better spacing for about text */
+  .about-description {
+    margin-bottom: 1.5rem;
   }
 }
 
 @media screen and (max-width: 480px) {
+  /* Container */
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  /* Hero section */
+  .hero {
+    padding: 3rem 0 2rem;
+  }
+
   .hero-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    line-height: 1.3;
+  }
+
+  .wave {
+    font-size: 2rem;
   }
 
   .hero-subtitle {
     font-size: 0.9rem;
+    line-height: 1.6;
   }
 
   .btn {
-    padding: 0.6rem 1.5rem;
+    padding: 0.7rem 1.5rem;
     font-size: 0.9rem;
+    min-height: 44px;
   }
 
   .social-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     font-size: 1.2rem;
   }
 
-  .section-title {
-    font-size: 1.5rem;
+  .social-links {
+    gap: 0.75rem;
   }
 
+  .code-animation {
+    height: 200px;
+  }
+
+  /* Section spacing */
+  section {
+    padding: 2.5rem 0;
+  }
+
+  /* Enable scroll-snap only on phones to provide section-by-section vertical snapping */
+  /* Use --vh variable so it respects mobile address-bar changes */
+  main#main-content {
+    height: calc(var(--vh, 1vh) * 100);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: y mandatory;
+    touch-action: pan-y;
+  }
+
+  /* Each top-level section will snap to the top of the viewport */
+  main#main-content > section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* About section */
   .stat-card {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
   }
 
   .stat-number {
+    font-size: 1.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+  }
+
+  .stat-card i {
+    font-size: 2rem;
+  }
+
+  /* On phones: show icon on the left and make stat-cards slightly smaller */
+  .stat-card {
+    /* Use grid so the icon can sit left while number + label stack vertically on the right */
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.375rem 0.75rem;
+    padding: 1rem;
+    text-align: left;
+    align-items: center;
+  }
+
+  /* Icon spans both rows on the left, stays vertically centered */
+  .stat-card i {
+    font-size: 1.8rem;
+    grid-column: 1 / 2;
+    grid-row: 1 / span 2;
+    margin: 0;
+    justify-self: center;
+    align-self: center;
+  }
+
+  /* Number above label in the right column */
+  .stat-number {
     font-size: 1.5rem;
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    margin: 0;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    margin: 0;
   }
 
   /* Expanding Cards - Small Mobile */
+  .projects {
+    padding: 3rem 0;
+  }
+
+  .expanding-cards {
+    gap: 12px;
+  }
+
   .project-option {
-    min-height: 80px;
+    min-height: 90px;
   }
 
   .project-option.active {
-    min-height: 400px;
+    min-height: 450px;
   }
 
   .project-option.active .project-main {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+  }
+
+  .project-option::before {
+    font-size: 1rem;
+  }
+
+  .project-icon-wrapper {
+    min-width: 45px;
+    max-width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  .project-option.active .project-icon-wrapper {
+    min-width: 60px;
+    max-width: 60px;
+    height: 60px;
+    font-size: 1.6rem;
   }
 
   .project-sub {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
   }
 
   .project-tech-mini span {
@@ -2306,7 +2653,175 @@ section#contact.in-view .contact-info {
 
   .project-link-btn {
     font-size: 0.85rem;
-    padding: 10px 18px;
+    padding: 10px 16px;
+    min-height: 44px;
+  }
+
+  .project-links-group {
+    gap: 0.5rem;
+  }
+
+  /* Skills carousel */
+  .card {
+    max-width: 280px;
+    min-height: 360px;
+    padding: 1.75rem 1.25rem;
+  }
+
+  .card h3 {
+    font-size: 1.4rem;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+  }
+
+  .card::before {
+    font-size: 2.5rem;
+  }
+
+  /* Contact section */
+  .contact-canvas-wrapper {
+    height: 250px;
+  }
+
+  .contact-textarea-wrapper textarea {
+    height: 48px;
+    font-size: 0.9rem;
+    padding: 0.65rem 0.9rem;
+  }
+
+  .contact-textarea-wrapper button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .contact-method {
+    padding: 1rem;
+  }
+
+  .contact-method i {
+    font-size: 1.75rem;
+  }
+
+  .contact-method h4 {
+    font-size: 1rem;
+  }
+
+  .contact-method p {
+    font-size: 0.85rem;
+  }
+
+  /* Make contact paragraph smaller on phones */
+  .contact-text {
+    font-size: 0.95rem; /* reduced from 1.2rem for better fit on phones */
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Reduce about text size on phones for better fit */
+  .about-text .about-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  /* Phones: put first two contact methods on the same row, third spans full width */
+  .contact-methods {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .contact-methods .contact-method:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  /* On phones, show the project icon on the left for collapsed cards */
+  .project-option:not(.active) .project-icon-wrapper {
+    left: 1rem; /* place near the left edge */
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%); /* vertically center */
+    background: rgba(0, 0, 0, 0.28);
+  }
+
+  /* Scroll to top - adjust position on phones (lower than before) */
+  .scroll-to-top {
+    width: 44px;
+    height: 44px;
+    bottom: 2rem; /* lower, closer to the bottom edge on phones */
+    right: 1rem;
+    font-size: 1.1rem;
+  }
+
+  /* Center the last contact-method on phones */
+  .contact-methods .contact-method:nth-child(3) {
+    grid-column: 1 / -1;
+    justify-content: center; /* center icon + text */
+    text-align: center;
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    width: 44px;
+    height: 44px;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  /* Improve button spacing */
+  .hero-buttons .btn {
+    padding: 0.75rem 1.5rem;
+  }
+
+  /* Glass title */
+  .glass-title {
+    font-size: clamp(32px, 10vw, 80px);
+    letter-spacing: -1px;
+  }
+
+  /* Toast notifications */
+  .toast {
+    max-width: calc(100% - 2rem);
+    padding: 0.75rem;
+  }
+
+  .toast-title {
+    font-size: 0.95rem;
+  }
+
+  .toast-message {
+    font-size: 0.85rem;
+  }
+}
+
+/* Extra small devices (320px and below) */
+@media screen and (max-width: 360px) {
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  .project-option.active .project-main {
+    font-size: 1.4rem;
+  }
+
+  .card {
+    max-width: 260px;
+    min-height: 340px;
+  }
+
+  .contact-canvas-wrapper {
+    height: 220px;
   }
 }
 
@@ -2644,128 +3159,7 @@ section#contact.in-view .contact-info {
   color: var(--primary-color);
 }
 
-/* Contact form + board styles */
-.contact-form {
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: nowrap;
-}
-
-.contact-form input,
-.contact-form textarea {
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
-.contact-form textarea {
-  flex: 1 1 auto;
-  min-height: 42px; /* appear like a single-line input */
-  resize: vertical;
-}
-
-/* Responsive: stack form on small screens */
-@media (max-width: 720px) {
-  .contact-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .contact-form textarea {
-    min-height: 90px;
-  }
-
-  .contact-form .btn {
-    width: 100%;
-  }
-}
-
-.contact-form .btn {
-  height: 42px;
-  padding: 0 0.8rem;
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Make the submit button visually match the message textarea */
-#contact-submit {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  color: var(--text-primary);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
-}
-
-/* Keep hover/focus affordance while preserving glass look */
-#contact-submit:hover,
-#contact-submit:focus {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(2, 6, 23, 0.35);
-}
-
-.contact-board {
-  /* Glassmorphism container */
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01)
-  );
-  background-blend-mode: overlay;
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 6px 24px rgba(2, 6, 23, 0.45);
-  border-radius: 12px;
-  color: var(--text-primary);
-  margin: 0.8rem 0;
-}
-
-.contact-board .board-title {
-  margin: 0 0 0.6rem 0;
-  font-size: 1rem;
-}
-
-.contact-board .board-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  max-height: 220px;
-  overflow: auto;
-  padding-right: 0.25rem;
-}
-
-/* Make combined messages block preserve line breaks */
-.board-item .board-text {
-  white-space: pre-wrap;
-}
-
-.contact-board .board-item {
-  padding: 0.6rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-}
-
-.contact-board .board-meta {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.35rem;
-}
-
-.contact-board .board-text {
-  white-space: pre-wrap;
-  font-size: 0.95rem;
-}
-
-.board-empty {
-  color: var(--text-secondary);
-}
+/* Old contact form + board styles removed (now using canvas + textarea) */
 
 /* visually hidden helper */
 .sr-only {
@@ -2780,40 +3174,49 @@ section#contact.in-view .contact-info {
   border: 0 !important;
 }
 
-/* Draft preview */
-.board-draft {
-  margin-bottom: 0.6rem;
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-}
+/* Ensure the 3D skills carousel preserves its desktop appearance on small phones */
+@media screen and (max-width: 480px) {
+  .skills-carousel {
+    padding: 20px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.draft-title {
-  margin: 0 0 0.35rem 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
+  .carousel-track {
+    height: 480px; /* keep same stacking height as desktop */
+    max-width: 100%;
+    perspective: 1800px; /* maintain depth feeling */
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.draft-preview {
-  min-height: 40px;
-  white-space: pre-wrap;
-  color: var(--text-primary);
-}
+  .card {
+    position: absolute; /* ensure cards overlap and transform in 3D */
+    width: 100%;
+    max-width: 380px;
+    height: 460px;
+    padding: 28px 22px;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(2, 6, 23, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  }
 
-.draft-preview.empty {
-  color: var(--text-secondary);
-  font-style: italic;
-}
+  .card::before {
+    font-size: 3rem;
+    margin-bottom: 10px;
+  }
 
-/* Draft shown inside board as first item */
-.board-item.draft {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border-left: 3px solid var(--primary-color);
-  font-style: italic;
+  .card h3 {
+    font-size: 1.7rem;
+  }
+
+  .card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
 }
 
 /* --- Custom thin scrollbar (WebKit browsers + Firefox) --- */
@@ -2845,29 +3248,23 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* Ensure important scrollable containers look consistent */
-.board-list,
 .container,
 pre,
-.code-view,
-.contact-board {
+.code-view {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
-.board-list::-webkit-scrollbar,
 .container::-webkit-scrollbar,
 pre::-webkit-scrollbar,
-.code-view::-webkit-scrollbar,
-.contact-board::-webkit-scrollbar {
+.code-view::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.board-list::-webkit-scrollbar-thumb,
 .container::-webkit-scrollbar-thumb,
 pre::-webkit-scrollbar-thumb,
-.code-view::-webkit-scrollbar-thumb,
-.contact-board::-webkit-scrollbar-thumb {
+.code-view::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
   border: 2px solid transparent;
@@ -2893,4 +3290,24 @@ pre::-webkit-scrollbar-thumb,
   html::-webkit-scrollbar-thumb:hover {
     width: 10px;
   }
+}
+
+/* Style textarea used by the Vue input component */
+textarea[ref="input"] {
+  outline: none;
+}
+
+/* The inline template already positions the textarea; add a little legibility */
+textarea {
+  color: #2f24c1;
+  padding: 0.6rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  font-size: 1rem;
+  resize: none;
+}
+
+/* Ensure the small helper div appended by script doesn't block pointer events */
+body > div {
+  pointer-events: none;
 }

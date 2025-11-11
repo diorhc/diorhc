@@ -110,17 +110,51 @@ if (burger && nav) {
 const scrollToTopBtn = safeQuerySelector("#scrollToTop");
 
 if (scrollToTopBtn) {
+  const mainScrollContainer = safeQuerySelector("main#main-content");
+
+  const getScrollPos = () => {
+    try {
+      if (
+        mainScrollContainer &&
+        getComputedStyle(mainScrollContainer).overflowY !== "visible"
+      ) {
+        return mainScrollContainer.scrollTop;
+      }
+    } catch (err) {
+      // fallback
+    }
+    return window.pageYOffset || window.scrollY || 0;
+  };
+
   const handleScroll = throttle(() => {
-    if (window.pageYOffset > 300) {
+    if (getScrollPos() > 300) {
       scrollToTopBtn.classList.add("visible");
     } else {
       scrollToTopBtn.classList.remove("visible");
     }
   }, 100);
 
+  // Listen to both window and main scroll container (main may be the scroll root on mobile)
   window.addEventListener("scroll", handleScroll, { passive: true });
+  if (mainScrollContainer) {
+    mainScrollContainer.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+  }
 
   scrollToTopBtn.addEventListener("click", () => {
+    // Scroll the actual scroll container to top (main on phones, window otherwise)
+    try {
+      if (
+        mainScrollContainer &&
+        getComputedStyle(mainScrollContainer).overflowY !== "visible"
+      ) {
+        mainScrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    } catch (err) {
+      // fallback to window
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
@@ -358,21 +392,21 @@ if (homeSection) {
   homeObserver.observe(homeSection);
 }
 
-// ===== Contact animations: title (top), board (right), form (left), info (bottom) =====
+// ===== Contact animations: title (top), canvas (right), textarea (left), info (bottom) =====
 let isAnimatingContact = false;
 const animateContactSequence = (opts = {}) => {
   const section = safeQuerySelector("section#contact");
   if (!section) return;
   const title = safeQuerySelector("section#contact .section-title");
-  const board = safeQuerySelector("#contact-board");
-  const form = safeQuerySelector("#contact-form");
+  const canvasWrapper = safeQuerySelector(".contact-canvas-wrapper");
+  const textareaWrapper = safeQuerySelector(".contact-textarea-wrapper");
   const info = safeQuerySelector(".contact-info");
 
   const prefersReduced = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
   ).matches;
   if (prefersReduced) {
-    [title, board, form, info].forEach((el) => {
+    [title, canvasWrapper, textareaWrapper, info].forEach((el) => {
       if (el) el.classList.add("enter");
     });
     return;
@@ -382,7 +416,7 @@ const animateContactSequence = (opts = {}) => {
   isAnimatingContact = true;
 
   // remove enter to allow retrigger
-  [title, board, form, info].forEach((el) => {
+  [title, canvasWrapper, textareaWrapper, info].forEach((el) => {
     if (el) el.classList.remove("enter");
   });
 
@@ -390,14 +424,14 @@ const animateContactSequence = (opts = {}) => {
   // eslint-disable-next-line no-unused-expressions
   section && section.offsetHeight;
 
-  // sequence: title -> board & form -> info
+  // sequence: title -> canvas & textarea -> info
   setTimeout(() => {
     if (title) title.classList.add("enter");
   }, 20);
 
   setTimeout(() => {
-    if (board) board.classList.add("enter");
-    if (form) form.classList.add("enter");
+    if (canvasWrapper) canvasWrapper.classList.add("enter");
+    if (textareaWrapper) textareaWrapper.classList.add("enter");
   }, 250);
 
   setTimeout(() => {
@@ -1418,13 +1452,43 @@ window.addEventListener("beforeinstallprompt", (e) => {
   console.log("PWA install prompt available");
 });
 
+// ===== Mobile Viewport Height Fix =====
+// Fix for mobile browsers where 100vh includes the address bar
+function setVh() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty("--vh", `${vh}px`);
+}
+
+setVh();
+window.addEventListener("resize", debounce(setVh, 100));
+window.addEventListener("orientationchange", setVh);
+
 // ===== Loading Screen =====
 window.addEventListener("load", () => {
+  // Primary: hide element with id `loadingScreen` if present (legacy markup)
   const loadingScreen = document.getElementById("loadingScreen");
   if (loadingScreen) {
     setTimeout(() => {
       loadingScreen.classList.add("hidden");
     }, 500);
+    return;
+  }
+
+  // Fallback: standalone SVG with class `.loader` (present in markup)
+  const loader = document.querySelector(".loader");
+  if (loader) {
+    // Smoothly fade out then remove the element so it doesn't persist on the page
+    try {
+      loader.style.transition = "opacity 0.45s ease, transform 0.45s ease";
+      loader.style.opacity = "0";
+      loader.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+      }, 480);
+    } catch (e) {
+      // If any inline style fails, remove immediately as a last resort
+      if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+    }
   }
 });
 
@@ -1524,133 +1588,7 @@ function removeToast(toast) {
   }, 300);
 }
 
-// ===== Contact Form Validation and Submission =====
-const contactForm = document.getElementById("contactForm");
-
-if (contactForm) {
-  const nameInput = contactForm.querySelector("#name");
-  const emailInput = contactForm.querySelector("#email");
-  const messageInput = contactForm.querySelector("#message");
-
-  // Real-time validation
-  const validateField = (input, validator, errorMessage) => {
-    const formGroup = input.closest(".form-group");
-    const errorElement = formGroup.querySelector(".error-message");
-
-    if (!validator(input.value.trim())) {
-      formGroup.classList.add("error");
-      errorElement.textContent = errorMessage;
-      errorElement.classList.add("visible");
-      return false;
-    } else {
-      formGroup.classList.remove("error");
-      errorElement.classList.remove("visible");
-      return true;
-    }
-  };
-
-  const validators = {
-    name: (value) => value.length >= 2,
-    email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-    message: (value) => value.length >= 10,
-  };
-
-  const errorMessages = {
-    name: "Name must be at least 2 characters",
-    email: "Please enter a valid email address",
-    message: "Message must be at least 10 characters",
-  };
-
-  // Add blur validation
-  nameInput?.addEventListener("blur", () => {
-    validateField(nameInput, validators.name, errorMessages.name);
-  });
-
-  emailInput?.addEventListener("blur", () => {
-    validateField(emailInput, validators.email, errorMessages.email);
-  });
-
-  messageInput?.addEventListener("blur", () => {
-    validateField(messageInput, validators.message, errorMessages.message);
-  });
-
-  // Form submission
-  contactForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    // Validate all fields
-    const isNameValid = validateField(
-      nameInput,
-      validators.name,
-      errorMessages.name
-    );
-    const isEmailValid = validateField(
-      emailInput,
-      validators.email,
-      errorMessages.email
-    );
-    const isMessageValid = validateField(
-      messageInput,
-      validators.message,
-      errorMessages.message
-    );
-
-    if (!isNameValid || !isEmailValid || !isMessageValid) {
-      showToast(
-        "error",
-        "Validation Error",
-        "Please fix the errors in the form"
-      );
-      return;
-    }
-
-    // Get form data
-    const formData = {
-      name: nameInput.value.trim(),
-      email: emailInput.value.trim(),
-      subject:
-        contactForm.querySelector("#subject")?.value.trim() || "No subject",
-      message: messageInput.value.trim(),
-    };
-
-    // Show loading state
-    const submitBtn = contactForm.querySelector(".btn-submit");
-    submitBtn.classList.add("loading");
-    submitBtn.disabled = true;
-
-    // Simulate form submission (replace with actual API call)
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Success
-      showToast(
-        "success",
-        "Message Sent!",
-        "Thank you for your message. I'll get back to you soon!"
-      );
-      contactForm.reset();
-
-      // Remove all error states
-      contactForm.querySelectorAll(".form-group").forEach((group) => {
-        group.classList.remove("error");
-        group.querySelector(".error-message")?.classList.remove("visible");
-      });
-
-      // Log form data (in production, send to your backend)
-      console.log("Form submitted:", formData);
-    } catch (error) {
-      showToast(
-        "error",
-        "Submission Failed",
-        "Something went wrong. Please try again later."
-      );
-      console.error("Form submission error:", error);
-    } finally {
-      submitBtn.classList.remove("loading");
-      submitBtn.disabled = false;
-    }
-  });
-}
+// ===== Old Contact Form Validation removed (now using canvas + textarea) =====
 
 // ===== Typewriter Effect with Keyboard Sync =====
 (() => {
@@ -2072,204 +2010,4 @@ setTimeout(() => {
   }
 }, 1500);
 
-// ===== Contact form handler (persist to localStorage + render board; draft shown inside board) =====
-(function () {
-  const form = safeQuerySelector("#contact-form");
-  const emailInput = safeQuerySelector("#contact-input");
-  const messageInput = safeQuerySelector("#contact-message");
-  const submitBtn = safeQuerySelector("#contact-submit");
-  const board = safeQuerySelector("#contact-board .board-list");
-  if (!form || !messageInput || !board) return;
-
-  const STORAGE_KEY = "contactMessages";
-  const DRAFT_KEY = "contactDraft";
-
-  const loadMessages = () => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (err) {
-      console.warn("Failed to load messages:", err);
-      return [];
-    }
-  };
-
-  const saveMessages = (arr) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    } catch (err) {
-      console.warn("Failed to save messages:", err);
-    }
-  };
-
-  const loadDraft = () => {
-    try {
-      return localStorage.getItem(DRAFT_KEY) || "";
-    } catch (err) {
-      return "";
-    }
-  };
-
-  const saveDraft = (text) => {
-    try {
-      if (!text) localStorage.removeItem(DRAFT_KEY);
-      else localStorage.setItem(DRAFT_KEY, text);
-    } catch (err) {
-      console.warn("Failed to save draft:", err);
-    }
-  };
-  // Update or create the draft element as the first child in the board
-  // Draft will be a simple text block without meta/timestamp
-  const updateDraftInDOM = (text) => {
-    const existing = board.querySelector("#contact-draft-item");
-    const t = text || "";
-    if (!t) {
-      if (existing) existing.remove();
-      return;
-    }
-
-    if (existing) {
-      const textNode = existing.querySelector(".board-text");
-      if (textNode) textNode.textContent = t;
-      existing.classList.remove("empty");
-      return;
-    }
-
-    const item = document.createElement("div");
-    item.id = "contact-draft-item";
-    item.className = "board-item draft";
-
-    const textEl = document.createElement("div");
-    textEl.className = "board-text";
-    textEl.textContent = t;
-
-    item.appendChild(textEl);
-
-    // insert as first child
-    if (board.firstChild) board.insertBefore(item, board.firstChild);
-    else board.appendChild(item);
-  };
-
-  const renderBoard = () => {
-    const messages = loadMessages();
-    // clear all existing nodes; we'll re-create draft + combined messages
-    board.innerHTML = "";
-
-    // render draft first if present
-    const draft = loadDraft();
-    if (draft) updateDraftInDOM(draft);
-
-    if (messages.length === 0) {
-      if (!draft) {
-        board.innerHTML = `<p class="board-empty">Пока нет сообщений. Будьте первым!</p>`;
-      }
-      return;
-    }
-
-    // Combine all submitted messages into a single block (no timestamps)
-    const combined = messages
-      .map((m) => (m.message || "").trim())
-      .filter(Boolean)
-      .reverse() // show oldest first inside the combined block
-      .join("\n\n");
-
-    const item = document.createElement("div");
-    item.className = "board-item";
-
-    const text = document.createElement("div");
-    text.className = "board-text";
-    text.textContent = combined;
-
-    item.appendChild(text);
-    board.appendChild(item);
-  };
-
-  // Initialize board + draft (restore draft into textarea)
-  renderBoard();
-  const initialDraft = loadDraft();
-  if (initialDraft) messageInput.value = initialDraft;
-
-  // Save draft as user types (debounced)
-  const debouncedSaveDraft = debounce((text) => saveDraft(text), 250);
-
-  messageInput.addEventListener("input", (e) => {
-    const txt = e.target.value || "";
-    updateDraftInDOM(txt);
-    debouncedSaveDraft(txt);
-  });
-
-  // Listen for storage changes to sync across tabs/windows
-  window.addEventListener("storage", (ev) => {
-    if (!ev.key) return;
-    if (ev.key === STORAGE_KEY) {
-      // messages updated in another tab
-      renderBoard();
-    }
-    if (ev.key === DRAFT_KEY) {
-      // draft changed in other tab
-      const newDraft = ev.newValue || "";
-      // update textarea only if it differs to avoid disrupting typing
-      if (messageInput.value !== newDraft) {
-        messageInput.value = newDraft;
-      }
-      updateDraftInDOM(newDraft);
-    }
-  });
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const message = messageInput.value.trim();
-    const email =
-      (emailInput && emailInput.value && emailInput.value.trim()) || "";
-    if (!message) {
-      messageInput.focus();
-      return;
-    }
-
-    const messages = loadMessages();
-    const entry = {
-      id: Date.now(),
-      message,
-      email,
-      ts: new Date().toISOString(),
-    };
-    // Add to front so newest appear first
-    messages.unshift(entry);
-    saveMessages(messages);
-    renderBoard();
-
-    // clear message, draft and give brief feedback on button
-    messageInput.value = "";
-    saveDraft("");
-    updateDraftInDOM("");
-
-    // show a tiny toast if available
-    try {
-      if (typeof showToast === "function") {
-        showToast(
-          "success",
-          "Отправлено",
-          "Спасибо! Ваше сообщение сохранено."
-        );
-      }
-    } catch (err) {
-      /* ignore */
-    }
-
-    if (submitBtn) {
-      const oldHTML = submitBtn.innerHTML;
-      // show temporary confirmation (check icon)
-      submitBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-          <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      `;
-      submitBtn.disabled = true;
-      setTimeout(() => {
-        submitBtn.innerHTML = oldHTML;
-        submitBtn.disabled = false;
-      }, 1500);
-    }
-  });
-})();
+// ===== Old contact form handler removed (now using canvas + textarea) =====
