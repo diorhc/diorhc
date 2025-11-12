@@ -72,6 +72,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.14/vue.min.js"></script>
   </head>
   <body>
+    <!-- Loading screen (covers viewport until page fully loads) -->
+    <div
+      id="loadingScreen"
+      class="loading-screen"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="loader">
+        <div class="loader-circle" aria-hidden="true"></div>
+        <div class="loader-text">Загрузка...</div>
+      </div>
+    </div>
+
     <!-- Animated Background -->
     <div class="animated-bg" aria-hidden="true">
       <div class="gradient-orb orb-1"></div>
