@@ -43,6 +43,19 @@ const safeQuerySelectorAll = (selector) => {
   }
 };
 
+// Determine the primary scroll container. The layout uses <main id="main-content"> as
+// the scrolling container (scroll-snap). Fall back to window when not present.
+const scrollContainer = safeQuerySelector("#main-content") || window;
+
+// Helper to scroll the chosen container to a vertical position smoothly.
+const scrollToContainer = (top) => {
+  if (scrollContainer === window) {
+    window.scrollTo({ top, behavior: "smooth" });
+  } else {
+    scrollContainer.scrollTo({ top, behavior: "smooth" });
+  }
+};
+
 // ===== Mobile Navigation =====
 const burger = safeQuerySelector(".burger");
 const nav = safeQuerySelector(".nav-links");
@@ -111,17 +124,26 @@ const scrollToTopBtn = safeQuerySelector("#scrollToTop");
 
 if (scrollToTopBtn) {
   const handleScroll = throttle(() => {
-    if (window.pageYOffset > 300) {
+    const scrollPos =
+      scrollContainer === window
+        ? window.pageYOffset
+        : scrollContainer.scrollTop;
+    if (scrollPos > 300) {
       scrollToTopBtn.classList.add("visible");
     } else {
       scrollToTopBtn.classList.remove("visible");
     }
   }, 100);
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  // Listen to the correct scroll container
+  (scrollContainer === window ? window : scrollContainer).addEventListener(
+    "scroll",
+    handleScroll,
+    { passive: true }
+  );
 
   scrollToTopBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollToContainer(0);
   });
 }
 
@@ -135,7 +157,7 @@ safeQuerySelectorAll('a[href^="#"]').forEach((anchor) => {
     const target = safeQuerySelector(href);
     if (target) {
       const offsetTop = target.offsetTop - -70;
-      window.scrollTo({ top: offsetTop, behavior: "smooth" });
+      scrollToContainer(offsetTop);
     }
   });
 });
@@ -145,7 +167,9 @@ const navbar = safeQuerySelector(".navbar");
 
 if (navbar) {
   const handleNavbarScroll = throttle(() => {
-    if (window.scrollY > 50) {
+    const pos =
+      scrollContainer === window ? window.scrollY : scrollContainer.scrollTop;
+    if (pos > 50) {
       navbar.style.background = "rgba(15, 23, 42, 0.95)";
       navbar.style.boxShadow = "0 4px 30px rgba(0, 0, 0, 0.3)";
     } else {
@@ -154,7 +178,11 @@ if (navbar) {
     }
   }, 100);
 
-  window.addEventListener("scroll", handleNavbarScroll, { passive: true });
+  (scrollContainer === window ? window : scrollContainer).addEventListener(
+    "scroll",
+    handleNavbarScroll,
+    { passive: true }
+  );
 }
 
 // ===== Intersection Observer for Animations =====
@@ -521,14 +549,20 @@ const highlightConnectors = (activeIndex) => {
 // Compute continuous per-connector progress based on scroll position between consecutive sections
 const updateConnectorFill = throttle(() => {
   const headerOffset = 70; // same offset used for smooth scroll
-  const scrollY = window.scrollY + headerOffset;
+  const currentScroll =
+    scrollContainer === window ? window.scrollY : scrollContainer.scrollTop;
+  const scrollY = currentScroll + headerOffset;
 
   // map section tops once per call
   const tops = [...sections].map((s) => s.offsetTop);
 
   navConnectors.forEach((connector, i) => {
     const start = tops[i] ?? 0;
-    const end = tops[i + 1] ?? document.body.scrollHeight;
+    const end =
+      tops[i + 1] ??
+      (scrollContainer === window
+        ? document.body.scrollHeight
+        : scrollContainer.scrollHeight);
     const range = Math.max(1, end - start);
     let progress = 0;
     if (scrollY <= start) progress = 0;
@@ -570,7 +604,7 @@ if (navNodes.length > 0 && sections.length > 0) {
 
       // Scroll to the exact top of the section (no extra top offset)
       const offset = target.offsetTop;
-      window.scrollTo({ top: offset, behavior: "smooth" });
+      scrollToContainer(offset);
 
       if (nav && nav.classList.contains("active")) {
         nav.classList.remove("active");
@@ -676,7 +710,11 @@ if (navNodes.length > 0 && sections.length > 0) {
   });
 
   // update connector fills while scrolling/resizing
-  window.addEventListener("scroll", updateConnectorFill, { passive: true });
+  (scrollContainer === window ? window : scrollContainer).addEventListener(
+    "scroll",
+    updateConnectorFill,
+    { passive: true }
+  );
   window.addEventListener("resize", debounce(updateConnectorFill, 150));
 }
 
