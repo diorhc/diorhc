@@ -8,6 +8,36 @@
   box-sizing: border-box;
 }
 
+/* Prevent horizontal overflow on all elements */
+* {
+  max-width: 100%;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Ensure images and media are responsive */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure flexbox and grid items don't overflow */
+.hero-buttons,
+.social-links,
+.about-stats,
+.project-tech-mini,
+.project-links-group {
+  max-width: 100%;
+}
+
 :root {
   --primary-color: #6366f1;
   --secondary-color: #8b5cf6;
@@ -45,6 +75,19 @@
   --card-bg: rgba(255, 255, 255, 0.6);
   --text-primary: #1e293b;
   --text-secondary: #475569;
+}
+
+/* ===== Accessibility Utilities ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* ===== Loading Screen ===== */
@@ -274,6 +317,51 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* ===== Scroll Snap (vertical) ===== */
+/* Use mandatory snapping for a firm slide-like experience; change to 'proximity' for softer feel */
+html,
+body {
+  /* make full-height so <main> can be the scrolling container */
+  height: 100%;
+  scroll-snap-type: none; /* disable root snapping - we'll use <main> */
+  -webkit-scroll-snap-type: none;
+}
+
+/* Use the main element as the scroll container so sections (its direct
+   children) snap correctly. This avoids issues when sections are nested
+   inside another wrapper. */
+main#main-content {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  -webkit-scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch; /* smooth momentum on iOS */
+}
+
+/* Per-section snap alignment */
+section {
+  scroll-snap-align: start;
+  -webkit-scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Respect users who prefer reduced motion: disable snapping and transitions */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-snap-type: none;
+    -webkit-scroll-snap-type: none;
+  }
+  .section-item {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }
 
 body {
@@ -282,6 +370,9 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
   opacity: 0;
   animation: fadeInBody 0.8s var(--ease-out-quint) 0.2s forwards;
 }
@@ -297,8 +388,10 @@ body {
 
 .container {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 /* ===== Animated Background ===== */
@@ -343,7 +436,7 @@ body {
   background: var(--gradient-3);
   top: 50%;
   right: -10%;
-  animation-delay: 7s;
+  animation-delay: 1s;
 }
 
 .orb-3 {
@@ -352,7 +445,7 @@ body {
   background: var(--gradient-2);
   bottom: -10%;
   left: 30%;
-  animation-delay: 14s;
+  animation-delay: 2s;
 }
 
 @keyframes float {
@@ -469,6 +562,8 @@ body {
   min-height: 100vh;
   display: flex;
   align-items: center;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .hero .container {
@@ -476,6 +571,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
+  width: 100%;
 }
 
 .hero-content {
@@ -706,7 +802,8 @@ section#home.in-view .hero-image {
 .code-animation {
   position: relative;
   /* slightly reduced width for better balance in the hero */
-  width: min(100%, 750px);
+  width: 100%;
+  max-width: min(100%, 750px);
   height: 400px;
   background: var(--card-bg);
   border-radius: 20px;
@@ -714,6 +811,7 @@ section#home.in-view .hero-image {
   margin: 0 auto;
   backdrop-filter: blur(10px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
 }
 
 .code-line {
@@ -775,9 +873,11 @@ section#home.in-view .hero-image {
 }
 
 .code-view {
-  width: 101%;
+  /* prevent accidental horizontal overflow (wrap long lines instead) */
+  width: 100%;
   height: calc(100% - 44px);
-  overflow: auto;
+  overflow-x: hidden; /* explicitly remove horizontal scrollbar */
+  overflow-y: auto; /* keep vertical scrolling for long code */
   background: transparent !important;
   border-radius: 12px;
   padding: 14px;
@@ -786,6 +886,7 @@ section#home.in-view .hero-image {
   font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.45;
+  box-sizing: border-box;
   /* make code-view visually transparent to show parent background */
   border: none !important;
   box-shadow: none !important;
@@ -793,7 +894,10 @@ section#home.in-view .hero-image {
 }
 
 .code-view code {
-  white-space: pre;
+  /* allow long lines to wrap and break to avoid horizontal scroll */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   display: block;
 }
 
@@ -838,6 +942,27 @@ section#home.in-view .hero-image {
 /* ===== Section Styles ===== */
 section {
   height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ===== Scroll Snap ===== */
+/* Enable vertical snap on the root scroll container (html/body). This
+   makes each full-height <section> snap into place when scrolling. */
+html,
+body {
+  /* mandatory gives a firm snap; change to 'proximity' if you prefer softer behavior */
+  scroll-snap-type: y mandatory;
+  -webkit-scroll-snap-type: y mandatory;
+}
+
+/* Each section should align to the start of the scrollport and always stop there */
+section {
+  scroll-snap-align: start;
+  -webkit-scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 /* Center the .container inside each section (vertical + horizontal centering) */
@@ -865,6 +990,8 @@ section > .container {
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
 }
 
 .about-description {
@@ -917,7 +1044,9 @@ section#about.in-view .about-text .about-description:last-child {
 .section-item {
   opacity: 0;
   transform: translateY(30px) scale(0.95);
+  /* Use a CSS variable for stagger delay (set by JS). Falls back to 0ms. */
   transition: transform 0.8s var(--ease-out-expo), opacity 0.6s ease-out;
+  transition-delay: var(--stagger, 0ms);
 }
 
 /* When a section becomes active, its items assemble into place */
@@ -1012,21 +1141,26 @@ section.out-of-view .section-item {
   justify-content: center;
   padding: 6rem 0;
   position: relative;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .projects .container {
   width: 100%;
   max-width: 1400px;
+  box-sizing: border-box;
 }
 
 .expanding-cards {
   display: flex;
   width: 100%;
+  max-width: 100%;
   height: 600px;
   min-height: 600px;
   gap: 15px;
   overflow: hidden;
   border-radius: 10px;
+  box-sizing: border-box;
 }
 
 .project-option {
@@ -1371,6 +1505,8 @@ section.out-of-view .section-item {
   justify-content: center;
   gap: 20px;
   padding: 40px 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .carousel-track {
@@ -1466,13 +1602,12 @@ section.out-of-view .section-item {
 
 /* Active card - front and center */
 .card.active {
-  transform: translateZ(20px) translateX(0) translateY(0) scale(1.02)
+  transform: translateZ(0px) translateX(0) translateY(0) scale(1.02)
     rotateY(0deg);
   z-index: 50;
   opacity: 1;
   filter: blur(0px) brightness(1);
-  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3),
-    0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 40px rgba(102, 126, 234, 0.3), 0 5px 10px rgba(0, 0, 0, 0.4);
 }
 
 /* Previous card - to the left */
@@ -1573,28 +1708,79 @@ section#contact.in-view .section-title {
   transform: translateY(0) scale(1);
 }
 
-#contact-board {
+.contact-canvas-wrapper {
   opacity: 0;
   transform: translateX(50px) scale(0.95);
   transition: transform 0.9s var(--ease-out-expo), opacity 0.7s ease-out 0.1s;
   will-change: transform, opacity;
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  /* spacing below the canvas so textarea/info don't stick to it */
+  margin-bottom: 1.5rem;
 }
-#contact-board.enter,
-section#contact.in-view #contact-board {
+
+.contact-canvas-wrapper.enter,
+section#contact.in-view .contact-canvas-wrapper {
   opacity: 1;
   transform: translateX(0) scale(1);
 }
 
-#contact-form {
+.contact-canvas-wrapper canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.contact-textarea-wrapper {
   opacity: 0;
   transform: translateX(-50px) scale(0.95);
   transition: transform 0.9s var(--ease-out-expo), opacity 0.7s ease-out 0.15s;
   will-change: transform, opacity;
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: 88px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 8px;
+  margin-bottom: 1.25rem;
 }
-#contact-form.enter,
-section#contact.in-view #contact-form {
+
+.contact-textarea-wrapper.enter,
+section#contact.in-view .contact-textarea-wrapper {
   opacity: 1;
   transform: translateX(0) scale(1);
+}
+
+.contact-textarea-wrapper > div {
+  width: 100%;
+  height: 100%;
+}
+
+.contact-textarea-wrapper textarea {
+  width: 100%;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: none;
+  transition: all 0.3s ease;
+}
+
+.contact-textarea-wrapper textarea:focus {
+  outline: none;
 }
 
 .contact-info {
@@ -1602,7 +1788,9 @@ section#contact.in-view #contact-form {
   transform: translateY(40px) scale(0.96);
   transition: transform 0.9s var(--ease-out-expo), opacity 0.7s ease-out 0.2s;
   will-change: transform, opacity;
+  grid-column: 1 / -1;
 }
+
 .contact-info.enter,
 section#contact.in-view .contact-info {
   opacity: 1;
@@ -1611,8 +1799,8 @@ section#contact.in-view .contact-info {
 
 @media (prefers-reduced-motion: reduce) {
   #contact .section-title,
-  #contact-board,
-  #contact-form,
+  .contact-canvas-wrapper,
+  .contact-textarea-wrapper,
   .contact-info {
     transition: none !important;
     transform: none !important;
@@ -1810,211 +1998,6 @@ section#contact.in-view .contact-info {
   background: var(--nav-active-color);
 }
 
-@media (max-width: 1200px) {
-  .side-nav {
-    left: 1.5rem;
-  }
-
-  .nav-node::after {
-    display: none;
-  }
-}
-
-@media (max-width: 992px) {
-  .side-nav {
-    display: none;
-  }
-}
-
-/* ===== Footer ===== */
-.footer {
-  /* Make footer overlay content instead of reserving space */
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  z-index: 900;
-  background: linear-gradient(
-    180deg,
-    rgba(2, 6, 23, 0.6),
-    rgba(15, 23, 42, 0.6)
-  );
-  padding: 2.25rem 0 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
-  /* hide off-screen when not visible so it doesn't occupy layout space */
-  transform: translateY(110%);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 520ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 420ms ease;
-}
-
-.footer.visible {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.footer-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.footer-top {
-  display: grid;
-  grid-template-columns: 1fr auto 200px;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.footer-brand {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.footer-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 8px;
-}
-
-.footer-title {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-}
-
-.footer-desc {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.footer-links nav {
-  display: flex;
-  gap: 1.1rem;
-  align-items: center;
-}
-
-.footer-links a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: all 220ms ease;
-}
-
-.footer-links a:hover {
-  color: var(--text-primary);
-  background: rgba(99, 102, 241, 0.06);
-  transform: translateY(-3px);
-}
-
-.footer-social {
-  display: flex;
-  gap: 0.8rem;
-  justify-self: end;
-}
-
-.footer-social a {
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--text-primary);
-  transition: transform 220ms ease, box-shadow 220ms ease;
-}
-
-.footer-social a:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  background: var(--gradient-1);
-}
-
-.footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-  padding-top: 1rem;
-}
-
-.footer-bottom .copyright {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-}
-
-.footer-bottom .made {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-@media (max-width: 800px) {
-  .footer-top {
-    grid-template-columns: 1fr;
-    text-align: left;
-  }
-
-  .footer-social {
-    justify-self: start;
-  }
-
-  .footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-/* Light theme adjustments for footer */
-[data-theme="light"] .footer {
-  background: linear-gradient(
-    180deg,
-    rgba(248, 250, 252, 0.96),
-    rgba(241, 245, 249, 0.96)
-  );
-  border-top: 1px solid rgba(16, 24, 40, 0.06);
-  color: var(--text-secondary);
-}
-
-[data-theme="light"] .footer .footer-logo {
-  background: rgba(16, 24, 40, 0.03);
-}
-
-[data-theme="light"] .footer-links a {
-  color: var(--text-secondary);
-}
-
-[data-theme="light"] .footer-links a:hover {
-  color: var(--text-primary);
-  background: rgba(99, 102, 241, 0.08);
-}
-
-[data-theme="light"] .footer-social a {
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text-primary);
-  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
-}
-
-[data-theme="light"] .footer-social a:hover {
-  background: var(--gradient-1);
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
-}
-
-[data-theme="light"] .footer-bottom {
-  border-top: 1px solid rgba(16, 24, 40, 0.04);
-}
-
 /* ===== Scroll to Top Button ===== */
 .scroll-to-top {
   position: fixed;
@@ -2092,224 +2075,6 @@ section#contact.in-view .contact-info {
   }
 }
 
-/* ===== Responsive Design ===== */
-@media screen and (max-width: 968px) {
-  .hero .container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .hero-image {
-    order: -1;
-  }
-
-  .code-animation {
-    height: 300px;
-  }
-
-  .about-content {
-    grid-template-columns: 1fr;
-  }
-
-  .about-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .skills-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .nav-links {
-    position: fixed;
-    right: 0;
-    top: 70px;
-    height: calc(100vh - 70px);
-    background: rgba(15, 23, 42, 0.98);
-    backdrop-filter: blur(10px);
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 3rem;
-    width: 100%;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-  }
-
-  .nav-links.active {
-    transform: translateX(0);
-  }
-
-  .burger {
-    display: block;
-  }
-
-  .burger.toggle .line1 {
-    transform: rotate(-45deg) translate(-5px, 6px);
-  }
-
-  .burger.toggle .line2 {
-    opacity: 0;
-  }
-
-  .burger.toggle .line3 {
-    transform: rotate(45deg) translate(-5px, -6px);
-  }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-
-  .hero-buttons {
-    flex-direction: column;
-  }
-
-  .section-title {
-    font-size: 2rem;
-  }
-
-  .about-stats {
-    grid-template-columns: 1fr;
-  }
-
-  /* Expanding Cards - Mobile */
-  .projects {
-    padding: 4rem 0;
-  }
-
-  .expanding-cards {
-    flex-direction: column;
-    height: auto;
-    min-height: auto;
-    gap: 15px;
-  }
-
-  .project-option {
-    min-height: 120px;
-    width: 100%;
-    flex: unset !important;
-  }
-
-  .project-option:hover {
-    flex: unset !important;
-  }
-
-  .project-option.active {
-    min-height: 500px;
-  }
-
-  .project-option.active .project-main {
-    font-size: 2rem;
-  }
-
-  .project-option.active .project-label {
-    bottom: 20px;
-    left: 20px;
-  }
-
-  .project-icon-wrapper {
-    min-width: 50px;
-    max-width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-  }
-
-  .project-option.active .project-icon-wrapper {
-    min-width: 65px;
-    max-width: 65px;
-    height: 65px;
-    font-size: 1.8rem;
-  }
-
-  .project-info {
-    margin-left: 15px;
-    max-width: calc(100% - 85px);
-  }
-
-  .project-sub {
-    font-size: 0.95rem;
-  }
-
-  .project-tech-mini span {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-  }
-
-  .project-link-btn {
-    font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-
-  .contact-methods {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .hero-title {
-    font-size: 1.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 0.9rem;
-  }
-
-  .btn {
-    padding: 0.6rem 1.5rem;
-    font-size: 0.9rem;
-  }
-
-  .social-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-  }
-
-  .stat-card {
-    padding: 1.5rem 1rem;
-  }
-
-  .stat-number {
-    font-size: 1.5rem;
-  }
-
-  /* Expanding Cards - Small Mobile */
-  .project-option {
-    min-height: 80px;
-  }
-
-  .project-option.active {
-    min-height: 400px;
-  }
-
-  .project-option.active .project-main {
-    font-size: 1.5rem;
-  }
-
-  .project-sub {
-    font-size: 0.95rem;
-  }
-
-  .project-tech-mini span {
-    font-size: 0.75rem;
-    padding: 5px 10px;
-  }
-
-  .project-link-btn {
-    font-size: 0.85rem;
-    padding: 10px 18px;
-  }
-}
-
 /* ===== Utility Classes ===== */
 .text-gradient {
   background: var(--gradient-1);
@@ -2326,15 +2091,22 @@ section#contact.in-view .contact-info {
   align-items: center;
   pointer-events: none; /* decorative */
   z-index: 0;
+  overflow: hidden; /* prevent overflow on small screens */
+  padding: 0 10px; /* add padding to prevent edge cutoff */
+  touch-action: none; /* prevent any touch interactions */
+  user-select: none; /* prevent text selection */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .glass-title {
   font-family: "Boldonse", system-ui;
   font-weight: 900;
   line-height: 0.9;
-  letter-spacing: -4px;
+  letter-spacing: clamp(-8px, -0.5vw, -4px); /* responsive letter-spacing */
   /* slightly reduced: smaller on all viewports so it doesn't dominate */
-  font-size: clamp(50px, 15vw, 150px);
+  font-size: clamp(40px, 12vw, 150px); /* reduced from 50px/15vw for mobile */
   position: relative;
   z-index: 0; /* sit behind hero content */
   color: rgba(255, 255, 255, 0.06); /* faint background word */
@@ -2344,6 +2116,12 @@ section#contact.in-view .contact-info {
   user-select: none;
   pointer-events: none;
   text-transform: uppercase;
+  white-space: nowrap; /* prevent wrapping */
+  max-width: 100%; /* constrain to container */
+  transform-origin: center center;
+  text-align: center; /* ensure centered alignment */
+  width: fit-content; /* prevent taking full width */
+  margin: 0 auto; /* center horizontally */
 }
 
 /* soft colored glow behind the letters */
@@ -2398,14 +2176,6 @@ section#contact.in-view .contact-info {
     transparent 1px
   );
   mix-blend-mode: multiply;
-}
-
-/* make sure the decorative title doesn't collide on small screens */
-@media (max-width: 680px) {
-  .glass-title {
-    font-size: clamp(36px, 12vw, 120px);
-    letter-spacing: -2px;
-  }
 }
 
 /* ===== Performance Optimizations ===== */
@@ -2644,178 +2414,6 @@ section#contact.in-view .contact-info {
   color: var(--primary-color);
 }
 
-/* Contact form + board styles */
-.contact-form {
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: nowrap;
-}
-
-.contact-form input,
-.contact-form textarea {
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
-.contact-form textarea {
-  flex: 1 1 auto;
-  min-height: 42px; /* appear like a single-line input */
-  resize: vertical;
-}
-
-/* Responsive: stack form on small screens */
-@media (max-width: 720px) {
-  .contact-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .contact-form textarea {
-    min-height: 90px;
-  }
-
-  .contact-form .btn {
-    width: 100%;
-  }
-}
-
-.contact-form .btn {
-  height: 42px;
-  padding: 0 0.8rem;
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Make the submit button visually match the message textarea */
-#contact-submit {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  color: var(--text-primary);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
-}
-
-/* Keep hover/focus affordance while preserving glass look */
-#contact-submit:hover,
-#contact-submit:focus {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(2, 6, 23, 0.35);
-}
-
-.contact-board {
-  /* Glassmorphism container */
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01)
-  );
-  background-blend-mode: overlay;
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 6px 24px rgba(2, 6, 23, 0.45);
-  border-radius: 12px;
-  color: var(--text-primary);
-  margin: 0.8rem 0;
-}
-
-.contact-board .board-title {
-  margin: 0 0 0.6rem 0;
-  font-size: 1rem;
-}
-
-.contact-board .board-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  max-height: 220px;
-  overflow: auto;
-  padding-right: 0.25rem;
-}
-
-/* Make combined messages block preserve line breaks */
-.board-item .board-text {
-  white-space: pre-wrap;
-}
-
-.contact-board .board-item {
-  padding: 0.6rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-}
-
-.contact-board .board-meta {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.35rem;
-}
-
-.contact-board .board-text {
-  white-space: pre-wrap;
-  font-size: 0.95rem;
-}
-
-.board-empty {
-  color: var(--text-secondary);
-}
-
-/* visually hidden helper */
-.sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
-
-/* Draft preview */
-.board-draft {
-  margin-bottom: 0.6rem;
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-}
-
-.draft-title {
-  margin: 0 0 0.35rem 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.draft-preview {
-  min-height: 40px;
-  white-space: pre-wrap;
-  color: var(--text-primary);
-}
-
-.draft-preview.empty {
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* Draft shown inside board as first item */
-.board-item.draft {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.01)
-  );
-  border-left: 3px solid var(--primary-color);
-  font-style: italic;
-}
-
 /* --- Custom thin scrollbar (WebKit browsers + Firefox) --- */
 /* Apply thin scrollbar globally and provide nicer thumb styling */
 html {
@@ -2848,8 +2446,7 @@ html::-webkit-scrollbar-thumb:hover {
 .board-list,
 .container,
 pre,
-.code-view,
-.contact-board {
+.code-view {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
@@ -2857,8 +2454,7 @@ pre,
 .board-list::-webkit-scrollbar,
 .container::-webkit-scrollbar,
 pre::-webkit-scrollbar,
-.code-view::-webkit-scrollbar,
-.contact-board::-webkit-scrollbar {
+.code-view::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
@@ -2866,8 +2462,7 @@ pre::-webkit-scrollbar,
 .board-list::-webkit-scrollbar-thumb,
 .container::-webkit-scrollbar-thumb,
 pre::-webkit-scrollbar-thumb,
-.code-view::-webkit-scrollbar-thumb,
-.contact-board::-webkit-scrollbar-thumb {
+.code-view::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
   border: 2px solid transparent;
@@ -2883,8 +2478,7 @@ pre::-webkit-scrollbar-thumb,
 [data-theme="light"] .board-list::-webkit-scrollbar-thumb,
 [data-theme="light"] .container::-webkit-scrollbar-thumb,
 [data-theme="light"] pre::-webkit-scrollbar-thumb,
-[data-theme="light"] .code-view::-webkit-scrollbar-thumb,
-[data-theme="light"] .contact-board::-webkit-scrollbar-thumb {
+[data-theme="light"] .code-view::-webkit-scrollbar-thumb {
   background: rgba(17, 24, 39, 0.08);
 }
 
@@ -2892,5 +2486,997 @@ pre::-webkit-scrollbar-thumb,
 @media (hover: hover) {
   html::-webkit-scrollbar-thumb:hover {
     width: 10px;
+  }
+}
+
+/* ===== RESPONSIVE DESIGN - TABLET & MOBILE ===== */
+/* Tablet (portrait and landscape) */
+@media (max-width: 1024px) {
+  :root {
+    --connector-length: 48px;
+  }
+
+  /* Fix overflow by making container fully responsive */
+  * {
+    max-width: 100%;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0 24px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  body {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  html {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  section {
+    overflow-x: hidden !important;
+    width: 100%;
+  }
+
+  .hero,
+  .about,
+  .projects,
+  .skills,
+  .contact {
+    overflow-x: hidden !important;
+    width: 100%;
+  }
+
+  /* Theme Toggle - smaller and better positioned */
+  .theme-toggle {
+    top: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    font-size: 1rem;
+  }
+
+  /* Side Navigation - hide on tablet/mobile to prevent overflow */
+  .side-nav {
+    display: none;
+  }
+
+  /* Hero Section - stack vertically */
+  .hero .container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem 24px;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .hero-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+
+  .social-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  /* Hero Image/Code Animation */
+  .hero-image {
+    order: -1;
+  }
+
+  .code-animation {
+    width: 100%;
+    height: 320px;
+    max-width: 100%;
+  }
+
+  /* About Section */
+  .about-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .about-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Projects Section - Expanding Cards */
+  .expanding-cards {
+    flex-direction: column;
+    height: auto;
+    min-height: 500px;
+    gap: 12px;
+  }
+
+  .project-option {
+    flex: 0 0 80px;
+    width: 100%;
+  }
+
+  .project-option.active {
+    flex: 0 0 400px;
+  }
+
+  .project-option::before {
+    transform: translate(-50%, -50%) rotate(0deg);
+    font-size: 0.85rem;
+  }
+
+  .project-option.active::before {
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.8);
+  }
+
+  /* Skills Carousel */
+  .skills-carousel {
+    padding: 20px 10px;
+  }
+
+  .carousel-track {
+    max-width: 100%;
+    height: 450px;
+  }
+
+  .card {
+    max-width: 90%;
+    height: 420px;
+    padding: 28px 24px;
+  }
+
+  .card::before {
+    font-size: 3.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.8rem;
+  }
+
+  .card p {
+    font-size: 0.95rem;
+  }
+
+  /* Adjust card positions for tablet */
+  .card.prev {
+    transform: translateX(-200px) translateZ(-120px) translateY(8px) scale(0.75)
+      rotateY(15deg);
+  }
+
+  .card.next {
+    transform: translateX(200px) translateZ(-120px) translateY(8px) scale(0.75)
+      rotateY(-15deg);
+  }
+
+  .card.far-left,
+  .card.far-right {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Toast Notifications */
+  .toast-container {
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    max-width: 100%;
+  }
+
+  /* Gradient Orbs - smaller on tablet */
+  .orb-1,
+  .orb-2,
+  .orb-3 {
+    width: 350px;
+    height: 350px;
+  }
+}
+
+/* Mobile (large phones) */
+@media (max-width: 768px) {
+  :root {
+    --connector-length: 40px;
+  }
+
+  .container {
+    padding: 0 16px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Ensure no horizontal overflow */
+  * {
+    max-width: 100%;
+  }
+
+  html,
+  body {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  section {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .hero,
+  .about,
+  .projects,
+  .skills,
+  .contact {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    font-size: 0.95rem;
+  }
+
+  /* Hero Section */
+  .hero {
+    min-height: 100vh;
+    padding: 80px 0 40px;
+  }
+
+  .hero .container {
+    gap: 1.5rem;
+    padding: 1.5rem 16px;
+  }
+
+  .hero-content {
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 1.8rem;
+    line-height: 1.3;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .social-links {
+    gap: 0.8rem;
+  }
+
+  .social-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+  }
+
+  /* Hero Image/Code Animation */
+  .code-animation {
+    height: 280px;
+  }
+
+  .code-line {
+    height: 16px;
+    margin: 1.2rem 0;
+  }
+
+  /* Section Titles */
+  .section-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* About Section */
+  .about-description {
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .about-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .stat-card i {
+    font-size: 2rem;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+  }
+
+  /* Projects Section */
+  .projects {
+    padding: 4rem 0;
+  }
+
+  .expanding-cards {
+    min-height: 400px;
+  }
+
+  .project-option {
+    flex: 0 0 70px;
+  }
+
+  .project-option.active {
+    flex: 0 0 380px;
+  }
+
+  .project-option::before {
+    font-size: 0.8rem;
+    letter-spacing: 0.4px;
+  }
+
+  .project-option.active .project-label {
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+  }
+
+  .project-icon-wrapper {
+    min-width: 50px;
+    max-width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .project-option.active .project-icon-wrapper {
+    min-width: 70px;
+    max-width: 70px;
+    height: 70px;
+    font-size: 2rem;
+  }
+
+  .project-option:not(.active) .project-icon-wrapper {
+    min-width: 38px;
+    max-width: 38px;
+    height: 38px;
+    font-size: 1rem;
+    bottom: 10px;
+  }
+
+  .project-info {
+    margin-left: 15px;
+    gap: 8px;
+    max-width: calc(100% - 100px);
+  }
+
+  .project-main {
+    font-size: 1.5rem;
+  }
+
+  .project-option.active .project-main {
+    font-size: 2rem;
+  }
+
+  .project-sub {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .project-option.active .project-sub {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  .project-tech-mini {
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .project-tech-mini span {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+  }
+
+  .project-links-group {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .project-link-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    gap: 6px;
+  }
+
+  /* Skills Section */
+  .skills-carousel {
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 10px;
+  }
+
+  .carousel-track {
+    height: 420px;
+    max-width: 75%;
+  }
+
+  .card {
+    max-width: 95%;
+    height: 400px;
+    padding: 24px 20px;
+  }
+
+  .card::before {
+    font-size: 3rem;
+    margin-bottom: 8px;
+  }
+
+  .card h3 {
+    font-size: 1.6rem;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+  }
+
+  /* Simplify 3D transforms for mobile */
+  .card.active {
+    transform: translateZ(0) scale(1);
+  }
+
+  .card.prev {
+    transform: translateX(-120px) translateZ(-80px) scale(0.7) rotateY(10deg);
+    opacity: 0.5;
+  }
+
+  .card.next {
+    transform: translateX(120px) translateZ(-80px) scale(0.7) rotateY(-10deg);
+    opacity: 0.5;
+  }
+
+  .card.far-left,
+  .card.far-right {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  /* Carousel Controls */
+  .carousel-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 1.2rem;
+  }
+
+  /* Toast Notifications */
+  .toast {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .toast-icon {
+    font-size: 1.3rem;
+  }
+
+  .toast-title {
+    font-size: 0.9rem;
+  }
+
+  .toast-message {
+    font-size: 0.85rem;
+  }
+
+  /* Gradient Orbs - smaller on mobile */
+  .orb-1 {
+    width: 300px;
+    height: 300px;
+  }
+
+  .orb-2 {
+    width: 250px;
+    height: 250px;
+  }
+
+  .orb-3 {
+    width: 280px;
+    height: 280px;
+  }
+
+  /* Code Toolbar */
+  .code-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .code-actions {
+    gap: 8px;
+  }
+
+  /* Key Animation */
+  .key {
+    font-size: 12vw;
+    letter-spacing: -1vw;
+  }
+
+  /* Glass Wrap - reduce size on mobile */
+  .glass-wrap {
+    padding: 0 8px;
+  }
+
+  .glass-title {
+    font-size: clamp(35px, 10vw, 120px);
+    letter-spacing: clamp(-10px, -0.8vw, -3px);
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-card {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    grid-template-rows: auto auto;
+    gap: 6px 12px;
+    align-items: center;
+    padding: 1rem 0.8rem;
+    text-align: right; /* make right column content right-aligned */
+  }
+
+  .stat-card i {
+    grid-column: 1;
+    grid-row: 1 / span 2; /* span both rows vertically */
+    justify-self: center;
+    align-self: center;
+    font-size: 2rem;
+    margin-bottom: 0;
+  }
+
+  .stat-number {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    font-size: 1.6rem;
+    margin: 0;
+  }
+
+  .stat-label {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    align-self: end;
+    font-size: 0.85rem;
+    margin: 0;
+    color: var(--text-secondary);
+  }
+
+  /* Shift the collapsed icon to the left edge on phones */
+  .project-option:not(.active) .project-icon-wrapper {
+    left: 12px !important;
+    transform: none !important;
+    bottom: 12px !important;
+  }
+
+  /* Add left padding to label area so text doesn't overlap the icon */
+  .project-option .project-label {
+    padding-left: 70px;
+  }
+
+  .contact-canvas-wrapper {
+    height: 240px; /* reduce from 500px to better fit phones */
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    transform: none !important; /* avoid off-screen transforms during entrance */
+  }
+
+  .contact-canvas-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover; /* if applicable for canvas drawing scaling */
+  }
+
+  .contact-text {
+    font-size: 1rem; /* slightly smaller on phones */
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .contact-methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    align-items: stretch;
+  }
+
+  /* Make first two items share a row */
+  .contact-methods > .contact-method:nth-child(1),
+  .contact-methods > .contact-method:nth-child(2) {
+    flex: 1 1 48%;
+    max-width: 48%;
+  }
+
+  /* Make the third item span full width and distribute its inner content evenly */
+  .contact-methods > .contact-method:nth-child(3) {
+    flex-basis: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+
+  /* Glass Wrap - further reduce on small screens */
+  .glass-wrap {
+    padding: 0 5px;
+  }
+
+  .glass-title {
+    font-size: clamp(30px, 9vw, 90px);
+    letter-spacing: clamp(-12px, -1vw, -2px);
+    transform: scale(0.75);
+  }
+}
+
+/* Mobile (small phones) */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  /* Hero Section */
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .social-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+
+  /* Code Animation */
+  .code-animation {
+    height: 240px;
+    padding: 0.8rem;
+  }
+
+  .code-line {
+    height: 14px;
+    margin: 1rem 0;
+  }
+
+  /* Section Titles */
+  .section-title {
+    font-size: 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* About Section */
+  .about-description {
+    font-size: 0.95rem;
+  }
+
+  .stat-card {
+    padding: 1.2rem 0.8rem;
+  }
+
+  .stat-card i {
+    font-size: 1.8rem;
+  }
+
+  .stat-number {
+    font-size: 1.6rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  /* Projects Section */
+  .project-option {
+    flex: 0 0 60px;
+  }
+
+  .project-option.active {
+    flex: 0 0 350px;
+  }
+
+  .project-option::before {
+    font-size: 0.75rem;
+  }
+
+  .project-option.active .project-label {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+  }
+
+  .project-icon-wrapper {
+    min-width: 44px;
+    max-width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .project-option.active .project-icon-wrapper {
+    min-width: 60px;
+    max-width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+  }
+
+  .project-option:not(.active) .project-icon-wrapper {
+    min-width: 34px;
+    max-width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+    bottom: 8px;
+  }
+
+  .project-info {
+    margin-left: 12px;
+    max-width: calc(100% - 80px);
+  }
+
+  .project-main {
+    font-size: 1.3rem;
+  }
+
+  .project-option.active .project-main {
+    font-size: 1.7rem;
+  }
+
+  .project-sub {
+    font-size: 0.85rem;
+  }
+
+  .project-tech-mini span {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+
+  .project-link-btn {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+  }
+
+  /* Skills Section */
+  .carousel-track {
+    height: 380px;
+  }
+
+  .card {
+    max-width: 100%;
+    height: 360px;
+    padding: 20px 16px;
+  }
+
+  .card::before {
+    font-size: 2.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.4rem;
+  }
+
+  .card p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  /* Further simplify card transforms */
+  .card.prev {
+    transform: translateX(-175px) scale(0.65) rotateY(30deg);
+  }
+
+  .card.next {
+    transform: translateX(175px) scale(0.65) rotateY(-30deg);
+  }
+
+  /* Carousel Controls */
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  /* Toast */
+  .toast-container {
+    top: 60px;
+  }
+
+  /* Gradient Orbs - even smaller */
+  .orb-1 {
+    width: 250px;
+    height: 250px;
+  }
+
+  .orb-2 {
+    width: 200px;
+    height: 200px;
+  }
+
+  .orb-3 {
+    width: 230px;
+    height: 230px;
+  }
+
+  /* Key Animation */
+  .key {
+    font-size: 14vw;
+    letter-spacing: -1.2vw;
+  }
+
+  /* Glass Wrap - smallest screens */
+  .glass-wrap {
+    padding: 0 4px;
+  }
+
+  .glass-title {
+    font-size: clamp(25px, 8vw, 90px);
+    letter-spacing: clamp(-14px, -1.2vw, -2px);
+    transform: scale(0.85); /* slight scale down */
+  }
+}
+
+/* Extra small devices (very small phones) */
+@media (max-width: 375px) {
+  .hero-title {
+    font-size: 1.4rem;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .card {
+    height: 340px;
+  }
+
+  .project-option.active {
+    flex: 0 0 320px;
+  }
+
+  /* Glass Wrap - extra small screens */
+  .glass-wrap {
+    padding: 0 2px;
+  }
+
+  .glass-title {
+    font-size: clamp(22px, 7vw, 80px);
+    letter-spacing: clamp(-16px, -1.5vw, -1.5px);
+    transform: scale(0.9);
+  }
+}
+
+/* Landscape mode adjustments for mobile */
+@media (max-width: 926px) and (orientation: landscape) {
+  .hero {
+    min-height: auto;
+    padding: 60px 0 40px;
+  }
+
+  section {
+    min-height: 100vh;
+    height: auto;
+  }
+
+  .expanding-cards {
+    flex-direction: row;
+    height: 400px;
+  }
+
+  .project-option {
+    flex: 0 0 60px;
+  }
+
+  .project-option.active {
+    flex: 1 1 auto;
+  }
+
+  .carousel-track {
+    height: 380px;
+  }
+
+  .card {
+    height: 350px;
+  }
+
+  /* Glass Wrap - scale down in landscape mode */
+  .glass-wrap {
+    padding: 0 15px;
+  }
+
+  .glass-title {
+    font-size: clamp(30px, 8vh, 100px); /* use vh instead of vw for landscape */
+    letter-spacing: clamp(-10px, -0.8vh, -2px);
+    transform: scale(0.85);
+  }
+}
+
+/* Ultra-narrow screens (Galaxy Fold, etc.) */
+@media (max-width: 320px) {
+  .glass-wrap {
+    padding: 0 2px;
+  }
+
+  .glass-title {
+    font-size: clamp(18px, 6vw, 70px);
+    letter-spacing: clamp(-18px, -2vw, -1px);
+    transform: scale(0.85);
+  }
+
+  .hero-title {
+    font-size: 1.25rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
   }
 }
