@@ -25,11 +25,7 @@
   <img src="https://git-hub-streak-stats.vercel.app?user=diorhc&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D" width="45%"  alt="Github streak"/>
 </p>
 
-<p align="center">
-  <a href="https://diorhc.github.io/diorhc/" target="_blank" rel="noopener">
-    <img src="https://i.imgur.com/L6tjBRn.png" alt="Open Website" style="border-radius:12px; max-width:100%; height:auto; display:block;" />
-  </a>
-</p>
+[![Open Website](https://i.imgur.com/wxogDsn.png)](https://diorhc.github.io/diorhc/)
 
 <p align="center">
 <a href="https://youtube.com/@diore" target="_blank"><img src="https://img.shields.io/static/v1?message=YouTube&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="YouTube" /></a>
