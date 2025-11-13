@@ -1,0 +1,25 @@
+{
+  "name": "Diorhc Portfolio - Developer & Creator",
+  "short_name": "Diorhc",
+  "description": "Portfolio разработчика - создатель скриптов, веб-приложений и ботов",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "categories": ["portfolio", "developer", "programming"],
+  "lang": "ru",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "assets/by.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "scope": "/",
+  "id": "diorhc-portfolio",
+  "prefer_related_applications": false
+}
