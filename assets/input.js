@@ -41,8 +41,13 @@ try {
   camera.position.x = 5;
   camera.position.y = -2;
 
-  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  var renderer = new THREE.WebGLRenderer({
+    antialias: window.devicePixelRatio < 2, // Disable AA on high-DPI displays
+    alpha: true,
+    powerPreference: "high-performance", // Request high-performance GPU
+    stencil: false, // Disable stencil buffer if not needed
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap pixel ratio at 2
   renderer.setSize(window.innerWidth, window.innerHeight);
   // Make the canvas background transparent so the page shows through.
   renderer.setClearColor(0x000000, 0);
@@ -105,13 +110,27 @@ try {
             object.material.dispose();
           }
         }
+        // Dispose textures if any
+        if (object.material && object.material.map) {
+          object.material.map.dispose();
+        }
       });
 
+      // Clear scene
+      while (scene.children.length > 0) {
+        scene.remove(scene.children[0]);
+      }
+
       // Dispose renderer
-      renderer.dispose();
+      if (renderer) {
+        renderer.dispose();
+        renderer.forceContextLoss();
+        renderer.context = null;
+        renderer.domElement = null;
+      }
 
       // Remove canvas
-      if (renderer.domElement && renderer.domElement.parentNode) {
+      if (renderer && renderer.domElement && renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
 
@@ -121,8 +140,17 @@ try {
     }
   };
 
-  // Cleanup on page unload
+  // Cleanup on page unload and visibility change
   window.addEventListener("beforeunload", window.cleanupThreeJS);
+
+  // Pause rendering when page is hidden to save resources
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      renderCalls = renderCalls.filter((fn) => fn !== renderScene);
+    } else if (!renderCalls.includes(renderScene)) {
+      renderCalls.push(renderScene);
+    }
+  });
 
   /*////////////////////////////////////////*/
 
@@ -1499,7 +1527,7 @@ try {
     el: el,
     data: () => ({
       message: "",
-      defaultMessage: "Start\nTyping...",
+      defaultMessage: "Welcome",
       characters: [],
 
       offsetX: 0,

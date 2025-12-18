@@ -15,22 +15,13 @@
 
 ###
 
-<p align="center">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=html,css,js,ts,github,react,python,vue,nodejs&theme=light&perline=12" />
-  </a>
-</p>
-<p align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=diorhc&show_icons=true&count_private=true&theme=transparent&hide_border=true&hide_title=true" width="45%" alt="Github stats"/>
-  <img src="https://git-hub-streak-stats.vercel.app?user=diorhc&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D" width="45%"  alt="Github streak"/>
-</p>
-
 [![Open Website](https://i.imgur.com/wxogDsn.png)](https://diorhc.github.io/diorhc/)
 
 <p align="center">
 <a href="https://youtube.com/@diore" target="_blank"><img src="https://img.shields.io/static/v1?message=YouTube&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="YouTube" /></a>
 <a href="https://instagram.com/dior.hcr" target="_blank"><img src="https://img.shields.io/static/v1?message=Instagram&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Instagram" /></a>
-<a href="https://boosty.to/diore" target="_blank"><img src="https://img.shields.io/static/v1?message=Boosty&logo=instagram&label=&color=E4405F&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Boosty" /></a>
+<a href="https://greasyfork.org/ru/users/1473734-diorhc" target="_blank"><img src="https://img.shields.io/static/v1?message=GreasyFork&logo=greasyfork&label=&color=333333&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="GreasyFork" /></a>
+<a href="https://boosty.to/diore" target="_blank"><img src="https://img.shields.io/static/v1?message=Boosty&logo=instagram&label=&color=F36A21&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Boosty" /></a>
 <a href="https://t.me/diorhc" target="_blank"><img src="https://img.shields.io/static/v1?message=Telegram&logo=telegram&label=&color=2CA5E0&logoColor=white&labelColor=&style=for-the-badge" height="32" alt="Telegram" /></a>
 </p>
 
