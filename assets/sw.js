@@ -6,6 +6,7 @@ const urlsToCache = [
   "/assets/styles.css",
   "/assets/script.js",
   "/assets/input.js",
+  "/assets/by.svg",
 ];
 
 // Install event - cache resources

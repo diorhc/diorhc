@@ -199,8 +199,9 @@ const animationObserver = new IntersectionObserver((entries) => {
         entry.target.classList &&
         entry.target.classList.contains("stat-card")
       ) {
+        // stat-cards now appear by sliding up from below (translateY)
         entry.target.style.opacity = "1";
-        entry.target.style.transform = "translateX(0)";
+        entry.target.style.transform = "translateY(0)";
       } else {
         entry.target.style.opacity = "1";
         entry.target.style.transform = "translateY(0)";
@@ -225,63 +226,6 @@ if (projectAndSkillNodes.length > 0) {
     animationObserver.observe(el);
   });
 }
-
-// For stat-cards we want last -> first sequencing: set translateX and reverse the delay order
-if (statCards.length > 0) {
-  const arr = Array.from(statCards);
-  arr.forEach((el, i) => {
-    // compute reverse index so the last card gets the smallest delay (appears first)
-    const rev = arr.length - 1 - i;
-    el.style.opacity = "0";
-    el.style.transform = "translateX(28px)"; // start slightly to the right
-    // slightly tighter stagger for stat cards
-    el.style.transition = `all 0.56s cubic-bezier(0.2,0.9,0.2,1) ${
-      rev * 0.09
-    }s`;
-    animationObserver.observe(el);
-  });
-}
-
-// ===== Stat-card animation trigger (nav click + section activation) =====
-let isAnimatingStats = false;
-
-const animateStatCardsSequence = (opts = {}) => {
-  if (!statCards || statCards.length === 0) return;
-  if (isAnimatingStats) return;
-  isAnimatingStats = true;
-
-  const arr = Array.from(statCards);
-  // prepare: set start state and compute per-card delay so last card animates first
-  arr.forEach((el, idx) => {
-    el.style.transition = "none";
-    el.style.opacity = "0";
-    el.style.transform = "translateX(40px) scale(0.9)";
-  });
-
-  // force a reflow so the browser acknowledges the initial state
-  // eslint-disable-next-line no-unused-expressions
-  arr[0] && arr[0].offsetHeight;
-
-  const baseDelay = 120; // ms per step - increased for smoother stagger
-  const duration = 800; // ms transition duration - increased for elegance
-
-  arr.forEach((el, i) => {
-    const revIndex = arr.length - 1 - i;
-    const delayMs = revIndex * baseDelay;
-    el.style.transition = `all ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${delayMs}ms`;
-    // start the animation frame after a small tick so transition applies
-    setTimeout(() => {
-      el.style.opacity = "1";
-      el.style.transform = "translateX(0) scale(1)";
-    }, 10);
-  });
-
-  // mark finished after the last transition ends
-  const totalMs = (arr.length - 1) * baseDelay + duration + 100;
-  setTimeout(() => {
-    isAnimatingStats = false;
-  }, totalMs);
-};
 
 // Trigger on side-nav clicks for the About node
 const sideNavNodes = safeQuerySelectorAll(".side-nav .nav-node");
@@ -312,7 +256,7 @@ if (sideNavNodes && sideNavNodes.length > 0) {
 
 // Hero animation: trigger on nav click and when the section becomes visible
 let isAnimatingHero = false;
-const animateHeroImageSequence = (opts = {}) => {
+function animateHeroImageSequence(opts = {}) {
   const hero = safeQuerySelector(".hero-image");
   if (!hero) return;
   const prefersReduced = window.matchMedia(
@@ -337,11 +281,11 @@ const animateHeroImageSequence = (opts = {}) => {
   setTimeout(() => {
     isAnimatingHero = false;
   }, duration + 100);
-};
+}
 
 // Hero content (text/buttons) animation: triggered by nav click and section visibility
 let isAnimatingHeroContent = false;
-const animateHeroContentSequence = (opts = {}) => {
+function animateHeroContentSequence(opts = {}) {
   const content = safeQuerySelector(".hero-content");
   if (!content) return;
   const prefersReduced = window.matchMedia(
@@ -366,7 +310,7 @@ const animateHeroContentSequence = (opts = {}) => {
   setTimeout(() => {
     isAnimatingHeroContent = false;
   }, duration + 100);
-};
+}
 
 // Also observe the home section for visibility-triggered runs
 const homeSection = safeQuerySelector("section#home");
@@ -378,6 +322,221 @@ if (homeSection) {
           animateHeroImageSequence();
           // animate hero content together when home becomes visible
           animateHeroContentSequence();
+
+          // Animate decorative background title (Portfolio) by toggling .show on .glass-wrap
+          try {
+            const glassWrap = safeQuerySelector(".glass-wrap");
+            const prefersReduced = window.matchMedia(
+              "(prefers-reduced-motion: reduce)"
+            ).matches;
+            if (glassWrap) {
+              // Only play glass-wrap entrance animation once per session
+              const alreadyPlayed =
+                sessionStorage.getItem("glassWrapPlayed") === "true";
+              if (prefersReduced) {
+                glassWrap.classList.add("show");
+                // ensure letters are visible for reduced-motion users
+                try {
+                  const keys = glassWrap.querySelectorAll(".glass-title .key");
+                  keys &&
+                    keys.forEach((k) => k.style.removeProperty("transform"));
+                  keys &&
+                    keys.forEach((k) => k.style.removeProperty("opacity"));
+                } catch (e) {
+                  /* ignore */
+                }
+                // Reveal nav/hero immediately for reduced-motion
+                try {
+                  const navTrack = safeQuerySelector(".nav-track");
+                  const emblem = safeQuerySelector(".side-nav .emblem");
+                  const heroContent = safeQuerySelector(".hero-content");
+                  const heroImage = safeQuerySelector(".hero-image");
+                  [navTrack, emblem, heroContent, heroImage].forEach(
+                    (el) => el && el.classList.add("enter")
+                  );
+                } catch (e) {}
+              } else if (alreadyPlayed) {
+                // If already played earlier in this session, show immediately without entrance animation
+                glassWrap.classList.add("show");
+                try {
+                  const keys = glassWrap.querySelectorAll(".glass-title .key");
+                  if (window.gsap && typeof window.gsap.set === "function") {
+                    gsap.set(keys, { yPercent: 0, opacity: 1, force3D: true });
+                  } else {
+                    keys &&
+                      keys.forEach((k) => {
+                        k.style.removeProperty("transform");
+                        k.style.removeProperty("opacity");
+                      });
+                  }
+                } catch (e) {
+                  /* ignore */
+                }
+                // Also run the post-glass reveal sequence immediately
+                try {
+                  const navTrack = safeQuerySelector(".nav-track");
+                  const emblem = safeQuerySelector(".side-nav .emblem");
+                  const heroContent = safeQuerySelector(".hero-content");
+                  const heroImage = safeQuerySelector(".hero-image");
+                  const safeAdd = (el) => {
+                    if (!el) return;
+                    if (!el.classList.contains("enter"))
+                      el.classList.add("enter");
+                  };
+                  safeAdd(navTrack);
+                  safeAdd(emblem);
+                  safeAdd(heroContent);
+                  safeAdd(heroImage);
+                } catch (e) {}
+              } else {
+                // Prepare and retrigger letter + container animation
+                const keys = glassWrap.querySelectorAll(".glass-title .key");
+
+                if (keys && keys.length) {
+                  if (window.gsap && typeof window.gsap.set === "function") {
+                    gsap.set(keys, {
+                      // start letters above their final position so they drop down
+                      yPercent: -100,
+                      opacity: 0,
+                      force3D: true,
+                    });
+                  } else {
+                    keys.forEach((k) => {
+                      // start letters above their final position so they will move down
+                      k.style.transform = "translateY(-100%)";
+                      k.style.opacity = "0";
+                      // no built-in delay here; we'll trigger after container transitionend
+                      k.style.transition =
+                        "transform 0.7s var(--ease-out-expo), opacity 0.7s ease";
+                    });
+                  }
+                }
+
+                glassWrap.classList.remove("show");
+                // force reflow
+                // eslint-disable-next-line no-unused-expressions
+                glassWrap.offsetHeight;
+
+                // Show container and then run letter animation after the container's transform transition ends
+                glassWrap.classList.add("show");
+
+                // Helper to run letters animation (GSAP or CSS fallback)
+                const runLetters = () => {
+                  try {
+                    if (keys && keys.length) {
+                      if (window.gsap && typeof window.gsap.to === "function") {
+                        gsap.to(keys, {
+                          yPercent: 0,
+                          opacity: 1,
+                          duration: 0.7,
+                          ease: "power3.out",
+                          stagger: 0.06,
+                        });
+                      } else {
+                        // CSS fallback: remove inline transform/opacity to trigger CSS transition
+                        keys.forEach((k) => {
+                          k.style.transform = "";
+                          k.style.opacity = "";
+                        });
+                        // cleanup transition property after animation completes
+                        setTimeout(
+                          () =>
+                            keys.forEach((k) =>
+                              k.style.removeProperty("transition")
+                            ),
+                          1000
+                        );
+                      }
+                    }
+                  } catch (err) {
+                    console.warn("letter sync animation failed", err);
+                  }
+                };
+
+                // Listen for transitionend on the container (prefer transform property). Run only once.
+                let ran = false;
+                const onTransitionEnd = (ev) => {
+                  // ensure we respond to transitions coming from the glassWrap itself
+                  if (ev.target !== glassWrap) return;
+                  // if propertyName is available, prefer 'transform'
+                  if (
+                    ev.propertyName &&
+                    ev.propertyName !== "transform" &&
+                    ev.propertyName !== "-webkit-transform"
+                  )
+                    return;
+                  if (ran) return;
+                  ran = true;
+                  runLetters();
+
+                  // mark that glass-wrap animation has played for this session
+                  try {
+                    sessionStorage.setItem("glassWrapPlayed", "true");
+                  } catch (e) {
+                    /* ignore storage errors */
+                  }
+
+                  // After letters run, orchestrate side-nav -> hero-content -> hero-image
+                  try {
+                    const prefersReduced = window.matchMedia(
+                      "(prefers-reduced-motion: reduce)"
+                    ).matches;
+                    const navTrack = safeQuerySelector(".nav-track");
+                    const emblem = safeQuerySelector(".side-nav .emblem");
+                    const heroContent = safeQuerySelector(".hero-content");
+                    const heroImage = safeQuerySelector(".hero-image");
+
+                    const safeAdd = (el) => {
+                      if (!el) return;
+                      if (!el.classList.contains("enter"))
+                        el.classList.add("enter");
+                    };
+
+                    if (prefersReduced) {
+                      safeAdd(navTrack);
+                      safeAdd(emblem);
+                      safeAdd(heroContent);
+                      safeAdd(heroImage);
+                    } else {
+                      if (navTrack) safeAdd(navTrack);
+                      if (emblem) setTimeout(() => safeAdd(emblem), 80);
+                      if (heroContent)
+                        setTimeout(() => safeAdd(heroContent), 140);
+                      if (heroImage) setTimeout(() => safeAdd(heroImage), 260);
+                    }
+                  } catch (seqErr) {
+                    console.warn("post-glass reveal sequence failed", seqErr);
+                  }
+
+                  glassWrap.removeEventListener(
+                    "transitionend",
+                    onTransitionEnd
+                  );
+                  if (fallbackTimer) clearTimeout(fallbackTimer);
+                };
+
+                // Fallback: in case transitionend doesn't fire, run after max timeout
+                const fallbackTimer = setTimeout(() => {
+                  if (!ran) {
+                    ran = true;
+                    runLetters();
+                    try {
+                      sessionStorage.setItem("glassWrapPlayed", "true");
+                    } catch (e) {}
+                    glassWrap.removeEventListener(
+                      "transitionend",
+                      onTransitionEnd
+                    );
+                  }
+                }, 1200);
+
+                glassWrap.addEventListener("transitionend", onTransitionEnd);
+              }
+            }
+          } catch (e) {
+            // fail silently if anything goes wrong
+            console.warn("glass-wrap animation failed to initialize", e);
+          }
         }
       });
     },
@@ -388,7 +547,7 @@ if (homeSection) {
 
 // ===== Contact animations: title (top), board (right), form (left), info (bottom) =====
 let isAnimatingContact = false;
-const animateContactSequence = (opts = {}) => {
+function animateContactSequence(opts = {}) {
   const section = safeQuerySelector("section#contact");
   if (!section) return;
   const title = safeQuerySelector("section#contact .section-title");
@@ -436,7 +595,7 @@ const animateContactSequence = (opts = {}) => {
   setTimeout(() => {
     isAnimatingContact = false;
   }, total);
-};
+}
 
 // Trigger contact animation on section visibility
 const contactSection = safeQuerySelector("section#contact");
@@ -457,17 +616,100 @@ if (contactSection) {
 // Also run when the About section becomes visible via an observer
 const aboutSection = safeQuerySelector("section#about");
 if (aboutSection) {
+  let aboutStatsAnimated = false;
   const aboutObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !aboutStatsAnimated) {
+          aboutStatsAnimated = true;
           animateStatCardsSequence();
+          // Stop observing after first animation
+          aboutObserver.unobserve(aboutSection);
         }
       });
     },
     { threshold: 0.36 }
   );
   aboutObserver.observe(aboutSection);
+}
+
+// ===== About stats reveal sequence (used by nav click and intersection observer) =====
+let isAnimatingStats = false;
+function animateStatCardsSequence(opts = {}) {
+  try {
+    console.debug("animateStatCardsSequence: start", opts);
+  } catch (e) {}
+  const container = safeQuerySelector(".about-stats");
+  if (!container) return;
+  if (isAnimatingStats) return;
+  isAnimatingStats = true;
+
+  const prefersReduced = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  const cards = Array.from(container.querySelectorAll(".stat-card"));
+  if (!cards || cards.length === 0) {
+    isAnimatingStats = false;
+    return;
+  }
+
+  if (prefersReduced) {
+    cards.forEach((c) => c.classList.add("enter"));
+    // attempt to animate numbers immediately if available
+    try {
+      cards.forEach((c) => {
+        const num = c.querySelector(".stat-number");
+        if (num && typeof animateNumbers === "function") {
+          const target = parseInt((num.textContent || "").replace("+", ""));
+          if (!isNaN(target)) animateNumbers(num, target);
+        }
+      });
+    } catch (e) {}
+    isAnimatingStats = false;
+    return;
+  }
+
+  // set initial hidden state for smooth entrance
+  cards.forEach((c) => {
+    c.style.opacity = "0";
+    c.style.transform = "translateY(22px)";
+    c.style.pointerEvents = "none";
+    c.style.transition =
+      c.style.transition || "all 0.55s cubic-bezier(0.22,1,0.36,1)";
+  });
+
+  // reveal with stagger
+  const baseDelay = opts.delay || 120;
+  cards.forEach((c, i) => {
+    setTimeout(() => {
+      c.style.removeProperty("transform");
+      c.style.removeProperty("opacity");
+      c.style.removeProperty("pointer-events");
+
+      // start number animation when its card becomes visible
+      try {
+        const num = c.querySelector(".stat-number");
+        if (num && typeof animateNumbers === "function") {
+          const raw = (num.textContent || "").replace("+", "");
+          const target = parseInt(raw);
+          if (!isNaN(target)) animateNumbers(num, target);
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }, baseDelay + i * 110);
+  });
+
+  // cleanup and unlock after animations
+  const total = baseDelay + cards.length * 110 + 420;
+  setTimeout(() => {
+    cards.forEach((c) => c.style.removeProperty("transition"));
+    try {
+      console.debug("animateStatCardsSequence: end");
+    } catch (e) {}
+    isAnimatingStats = false;
+  }, total);
 }
 
 // ===== Section assemble / leave animations =====
@@ -504,11 +746,31 @@ if (aboutSection) {
         if (entry.isIntersecting) {
           sec.classList.add("in-view");
           sec.classList.remove("out-of-view");
+
+          // If this is the contact section, set stagger vars for contact-method items
+          if (sec.id === "contact") {
+            const methods = Array.from(sec.querySelectorAll(".contact-method"));
+            methods.forEach((m, idx) => {
+              try {
+                if (!prefersReduced)
+                  m.style.setProperty("--stagger", `${idx * 90}ms`);
+                else m.style.setProperty("--stagger", `0ms`);
+              } catch (e) {
+                /* ignore */
+              }
+            });
+          }
         } else {
           // Only mark out-of-view if it was previously in-view to avoid initial flicker
           if (sec.classList.contains("in-view")) {
             sec.classList.remove("in-view");
             sec.classList.add("out-of-view");
+            // clear stagger when leaving (optional)
+            if (sec.id === "contact") {
+              sec
+                .querySelectorAll(".contact-method")
+                .forEach((m) => m.style.removeProperty("--stagger"));
+            }
           }
         }
       });
@@ -517,6 +779,441 @@ if (aboutSection) {
   );
 
   secNodes.forEach((s) => sectionViewObserver.observe(s));
+})();
+
+// Helper: format number with thousands separators (RU-friendly)
+function formatNumber(n) {
+  try {
+    return new Intl.NumberFormat("ru-RU").format(Math.round(n));
+  } catch (e) {
+    return String(Math.round(n));
+  }
+}
+
+// Simple localStorage cache with TTL (seconds)
+function cacheGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || !obj.ts) return null;
+    const age = Date.now() - obj.ts;
+    if (typeof obj.ttl === "number" && age > obj.ttl * 1000) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return obj.value;
+  } catch (e) {
+    return null;
+  }
+}
+
+function cacheSet(key, value, ttlSeconds = 86400) {
+  try {
+    const obj = { ts: Date.now(), ttl: ttlSeconds, value };
+    localStorage.setItem(key, JSON.stringify(obj));
+  } catch (e) {
+    // ignore storage errors (private mode etc.)
+  }
+}
+
+// Helper: try to get installs for a single Greasy Fork script id.
+// Tries JSON endpoint first, then falls back to scraping the HTML page.
+async function getGreasyForkInstalls(id) {
+  const tryJson = async () => {
+    const url = `https://greasyfork.org/scripts/${id}.json`;
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error(`JSON fetch failed: ${res.status}`);
+    const j = await res.json();
+    // Heuristic checks for common fields
+    if (j && typeof j === "object") {
+      // common possibilities
+      const candidates = [
+        j.statistics && j.statistics.installs,
+        j.statistics && j.statistics.install_count,
+        j.install_count,
+        j.installs,
+        j.total_installs,
+      ];
+      for (const c of candidates) {
+        if (typeof c === "number" && !isNaN(c)) return c;
+      }
+      // fallback: try to find any numeric property in the JSON (last resort)
+      const s = JSON.stringify(j);
+      const m = s.match(/([0-9]{2,})/);
+      if (m) return parseInt(m[1], 10);
+    }
+    throw new Error("No installs in JSON");
+  };
+
+  const tryHtml = async () => {
+    // try localized RU page first
+    const urls = [
+      `https://greasyfork.org/ru/scripts/${id}`,
+      `https://greasyfork.org/scripts/${id}`,
+    ];
+    for (const url of urls) {
+      const res = await fetch(url, { cache: "no-cache" });
+      if (!res.ok) continue;
+      const text = await res.text();
+      // look for patterns like "Установок 1 234" or "1,234 installs"
+      const reList = [
+        /Установк[а-яА-ЯёЁ]*[\s:\u00A0]*([0-9\s,\.]+)/i,
+        /([0-9][0-9\s,\.]+)\s*(?:установ|установок)/i,
+        /([0-9][0-9,\.\s]+)\s*installs?/i,
+        /data-installations\s*=\s*"([0-9,\.\s]+)"/i,
+        /install-count["'\s:>]*([0-9,\.\s]+)/i,
+      ];
+      for (const re of reList) {
+        const m = text.match(re);
+        if (m && m[1]) {
+          const digits = m[1].replace(/[^0-9]/g, "");
+          const val = parseInt(digits || "0", 10);
+          if (!isNaN(val) && val > 0) return val;
+        }
+      }
+    }
+    throw new Error("No installs found in HTML");
+  };
+
+  // try JSON then HTML
+  try {
+    return await tryJson();
+  } catch (e) {
+    try {
+      return await tryHtml();
+    } catch (e2) {
+      throw new Error(
+        `Failed to get installs for ${id}: ${e.message}; ${e2.message}`
+      );
+    }
+  }
+}
+
+// Fetch sum of installs for array of Greasy Fork script ids. Returns number or throws.
+async function fetchSumGreasyForkInstalls(ids) {
+  const cacheKey = `greasy_installs_${ids.join(",")}`;
+  const cached = cacheGet(cacheKey);
+  if (typeof cached === "number") return cached;
+
+  const results = await Promise.all(
+    ids.map((id) =>
+      getGreasyForkInstalls(id).catch((err) => {
+        console.warn(`install fetch failed for ${id}`, err);
+        return 0;
+      })
+    )
+  );
+  const sum = results.reduce((a, b) => a + (Number(b) || 0), 0);
+  try {
+    if (sum > 0) cacheSet(cacheKey, sum, 24 * 3600);
+    else cacheSet(cacheKey, 0, 3600);
+  } catch (e) {}
+  return sum;
+}
+
+// Helper: fetch number of non-empty source code lines for a single Greasy Fork script
+async function getGreasyForkLOC(id) {
+  // Try JSON endpoints first (may or may not contain source)
+  const tryJson = async () => {
+    // Try a couple of likely JSON endpoints
+    const urls = [
+      `https://greasyfork.org/scripts/${id}.json`,
+      `https://greasyfork.org/scripts/${id}/versions/latest.json`,
+    ];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { cache: "no-cache" });
+        if (!res.ok) continue;
+        const j = await res.json();
+        // Look for source-like fields
+        const candidates = [
+          j.source,
+          j.code,
+          j.content,
+          j.files &&
+            Array.isArray(j.files) &&
+            j.files.map((f) => f.content).join("\n"),
+        ];
+        for (const c of candidates) {
+          if (typeof c === "string" && c.trim().length > 0) {
+            const lines = c
+              .split(/\r?\n/)
+              .filter((l) => l.trim().length > 0).length;
+            if (lines > 0) return lines;
+          }
+        }
+      } catch (e) {
+        /* ignore and try next */
+      }
+    }
+    throw new Error("No source in JSON");
+  };
+
+  const tryHtml = async () => {
+    const urls = [
+      `https://greasyfork.org/ru/scripts/${id}`,
+      `https://greasyfork.org/scripts/${id}`,
+    ];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { cache: "no-cache" });
+        if (!res.ok) continue;
+        const text = await res.text();
+        // Find all <pre> blocks and choose the longest one as likely source code
+        const preMatches = [...text.matchAll(/<pre[^>]*>([\s\S]*?)<\/pre>/gi)];
+        if (preMatches.length) {
+          let longest = "";
+          for (const m of preMatches) {
+            if (m[1] && m[1].length > longest.length) longest = m[1];
+          }
+          if (longest) {
+            // Strip HTML entities and tags inside pre if any
+            const stripped = longest
+              .replace(/<[^>]+>/g, "")
+              .replace(/&nbsp;|&lt;|&gt;|&amp;/g, " ");
+            const lines = stripped
+              .split(/\r?\n/)
+              .filter((l) => l.trim().length > 0).length;
+            if (lines > 0) return lines;
+          }
+        }
+        // Fallback: look for code blocks inside <code> tags
+        const codeMatches = [
+          ...text.matchAll(/<code[^>]*>([\s\S]*?)<\/code>/gi),
+        ];
+        if (codeMatches.length) {
+          let longest = "";
+          for (const m of codeMatches) {
+            if (m[1] && m[1].length > longest.length) longest = m[1];
+          }
+          if (longest) {
+            const stripped = longest
+              .replace(/<[^>]+>/g, "")
+              .replace(/&nbsp;|&lt;|&gt;|&amp;/g, " ");
+            const lines = stripped
+              .split(/\r?\n/)
+              .filter((l) => l.trim().length > 0).length;
+            if (lines > 0) return lines;
+          }
+        }
+      } catch (e) {
+        /* ignore and try next */
+      }
+    }
+    throw new Error("No source found in HTML");
+  };
+
+  try {
+    return await tryJson();
+  } catch (e) {
+    try {
+      return await tryHtml();
+    } catch (e2) {
+      throw new Error(
+        `Failed to get LOC for ${id}: ${e.message}; ${e2.message}`
+      );
+    }
+  }
+}
+
+async function fetchSumGreasyForkLOC(ids) {
+  const cacheKey = `greasy_loc_${ids.join(",")}`;
+  const cached = cacheGet(cacheKey);
+  if (typeof cached === "number") return cached;
+
+  const results = await Promise.all(
+    ids.map((id) =>
+      getGreasyForkLOC(id).catch((err) => {
+        console.warn(`LOC fetch failed for ${id}`, err);
+        return 0;
+      })
+    )
+  );
+  const sum = results.reduce((a, b) => a + (Number(b) || 0), 0);
+  try {
+    if (sum > 0) cacheSet(cacheKey, sum, 24 * 3600);
+    else cacheSet(cacheKey, 0, 3600);
+  } catch (e) {}
+  return sum;
+}
+
+// ===== About-stats 3D Vertical Slider =====
+(function () {
+  const aboutStats = safeQuerySelector(".about-stats");
+  if (!aboutStats) return;
+
+  const cards = Array.from(aboutStats.querySelectorAll(".stat-card"));
+  if (cards.length <= 1) return; // nothing to slide
+
+  // add class to enable 3D styles
+  aboutStats.classList.add("stats-3d");
+
+  // set data-index attributes
+  cards.forEach((c, i) => {
+    c.dataset.sidx = i;
+
+    // If this is the second stat card (sidx == 1), replace its static number
+    // with the sum of source lines (LOC) from two Greasy Fork scripts.
+    // Script IDs to sum: 537017 (YouTube) and 537433 (Telegram)
+    if (i === 1) {
+      try {
+        const numEl = c.querySelector(".stat-number");
+        if (numEl) {
+          numEl.textContent = "...";
+          fetchSumGreasyForkLOC([537017, 537433])
+            .then((sum) => {
+              if (typeof sum === "number" && !isNaN(sum) && sum > 0) {
+                numEl.textContent = formatNumber(sum) + "+";
+                numEl.dataset.animated = "true";
+              }
+            })
+            .catch((err) => {
+              console.warn("Failed to fetch Greasy Fork LOC:", err);
+              if (!numEl.textContent || numEl.textContent === "...")
+                numEl.textContent = "1000+";
+            });
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    // If this is the third stat card (sidx == 2), replace its static number
+    // with the sum of installs from two Greasy Fork scripts.
+    // Script IDs to sum: 537017 (YouTube) and 537433 (Telegram)
+    if (i === 2) {
+      try {
+        const numEl = c.querySelector(".stat-number");
+        if (numEl) {
+          // show loading placeholder
+          numEl.textContent = "...";
+          // fetch and update installs (does not block UI)
+          fetchSumGreasyForkInstalls([537017, 537433])
+            .then((sum) => {
+              if (typeof sum === "number" && !isNaN(sum)) {
+                numEl.textContent = formatNumber(sum) + "+";
+                // mark as already animated so the built-in counter won't override it
+                numEl.dataset.animated = "true";
+              }
+            })
+            .catch((err) => {
+              // on failure, leave existing text or fallback to original static
+              console.warn("Failed to fetch Greasy Fork installs:", err);
+              // restore a sensible fallback if empty
+              if (!numEl.textContent || numEl.textContent === "...")
+                numEl.textContent = "100+";
+            });
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+  });
+
+  let current = 0;
+  let autoplayTimer = null;
+  const autoplayInterval = 3500;
+
+  function normalizeOffset(offset, len) {
+    // wrap offset to range [-len/2, len/2]
+    if (offset > len / 2) return offset - len;
+    if (offset < -len / 2) return offset + len;
+    return offset;
+  }
+
+  function updatePositions() {
+    const len = cards.length;
+    cards.forEach((card, i) => {
+      let offset = i - current;
+      offset = normalizeOffset(offset, len);
+      const abs = Math.abs(offset);
+
+      // Tuned spacing/depth values for a more pronounced 3D stack
+      const translateY = offset * 110; // vertical spacing between stacked cards
+      const translateZ = -abs * 220; // deeper Z-depth for stronger perspective
+      const scale = Math.max(0.7, 1 - abs * 0.14); // allow slightly smaller deep cards
+      const rotateX = offset * 8; // increased tilt for depth feeling
+      // keep cards visible a bit further into the stack before fully fading
+      const opacity = abs > 4 ? 0 : Math.max(0, 1 - abs * 0.2);
+
+      card.style.zIndex = String(100 - Math.round(abs));
+      card.style.transform = `translate(-50%, calc(-50% + ${translateY}px)) translateZ(${translateZ}px) scale(${scale}) rotateX(${rotateX}deg)`;
+      card.style.opacity = opacity;
+      card.classList.toggle("is-front", offset === 0);
+    });
+  }
+
+  function next() {
+    current = (current + 1) % cards.length;
+    updatePositions();
+  }
+
+  function prev() {
+    current = (current - 1 + cards.length) % cards.length;
+    updatePositions();
+  }
+
+  // autoplay
+  function startAutoplay() {
+    if (autoplayTimer) return;
+    autoplayTimer = setInterval(next, autoplayInterval);
+  }
+  function stopAutoplay() {
+    if (!autoplayTimer) return;
+    clearInterval(autoplayTimer);
+    autoplayTimer = null;
+  }
+
+  // pause on hover/focus
+  aboutStats.addEventListener("mouseenter", stopAutoplay);
+  aboutStats.addEventListener("mouseleave", startAutoplay);
+  aboutStats.addEventListener("focusin", stopAutoplay);
+  aboutStats.addEventListener("focusout", startAutoplay);
+
+  // pointer interactions: swipe for touch
+  let touchStartY = 0;
+  aboutStats.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartY = e.touches[0].clientY;
+      stopAutoplay();
+    },
+    { passive: true }
+  );
+  aboutStats.addEventListener(
+    "touchend",
+    (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      const diff = touchEndY - touchStartY;
+      if (Math.abs(diff) > 30) {
+        if (diff > 0) prev();
+        else next();
+      }
+      setTimeout(startAutoplay, 1200);
+    },
+    { passive: true }
+  );
+
+  // keyboard
+  aboutStats.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "PageDown") {
+      e.preventDefault();
+      next();
+    } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+      e.preventDefault();
+      prev();
+    }
+  });
+
+  // initialize
+  updatePositions();
+  startAutoplay();
+
+  // respect reduced motion preference
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    stopAutoplay();
+  }
 })();
 
 // ===== Side navigation active state (observe sections) =====
@@ -761,33 +1458,61 @@ if (statNumbers.length > 0) {
   });
 }
 
-// ===== Typing Effect =====
-const subtitle = safeQuerySelector(".hero-subtitle");
-if (subtitle) {
-  const originalText = subtitle.textContent || "";
+// ===== Typing Effect (hero-subtitle) =====
+// Wait for translations to be applied (i18n:applied) so we type the final localized text
+// instead of typing before i18n overwrites content and causing duplication.
+(() => {
+  const subtitle = safeQuerySelector(".hero-subtitle");
+  if (!subtitle) return;
 
-  // Check if user prefers reduced motion
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
-  if (!prefersReducedMotion && originalText) {
+  const typingSpeed = 50;
+  let started = false;
+
+  const startTyping = (text) => {
+    if (started) return;
+    started = true;
+    if (prefersReducedMotion || !text) {
+      // just ensure the subtitle shows the text without typing
+      subtitle.textContent = text || subtitle.textContent || "";
+      return;
+    }
+
+    // do typewriter effect
     subtitle.textContent = "";
     let charIndex = 0;
-    const typingSpeed = 50;
-
     const typeWriter = () => {
-      if (charIndex < originalText.length) {
-        subtitle.textContent += originalText.charAt(charIndex);
+      if (charIndex < text.length) {
+        subtitle.textContent += text.charAt(charIndex);
         charIndex++;
         setTimeout(typeWriter, typingSpeed);
       }
     };
 
-    // Start typing after a small delay
-    setTimeout(typeWriter, 500);
-  }
-}
+    // small delay to let other UI settle
+    setTimeout(() => typeWriter(), 320);
+  };
+
+  // If i18n applies translations later, it will dispatch 'i18n:applied'. Prefer that value.
+  const onI18n = () => {
+    try {
+      const final = subtitle.textContent || "";
+      startTyping(final);
+    } catch (e) {
+      startTyping(subtitle.textContent || "");
+    }
+  };
+
+  document.addEventListener("i18n:applied", onI18n, { once: true });
+
+  // Fallback: if i18n doesn't fire within 800ms, start typing whatever is currently present
+  setTimeout(() => {
+    startTyping(subtitle.textContent || "");
+  }, 800);
+})();
 
 // ===== 3D Skills Carousel =====
 (() => {
@@ -797,31 +1522,12 @@ if (subtitle) {
   const cards = Array.from(track.querySelectorAll(".card") || []);
   if (cards.length === 0) return;
 
-  const prevBtn = safeQuerySelector(".carousel-nav.prev");
-  const nextBtn = safeQuerySelector(".carousel-nav.next");
-  const indicatorsContainer = safeQuerySelector(".carousel-indicators");
+  // Navigation controls (optional in markup) are not required; keep carousel functional without them
   let active = 0;
   let isAnimating = false;
   let autoplayInterval = null;
 
-  // Create indicators
-  if (indicatorsContainer) {
-    cards.forEach((_, i) => {
-      const indicator = document.createElement("button");
-      indicator.className = "carousel-indicator";
-      indicator.setAttribute("aria-label", `Go to skill ${i + 1}`);
-      indicator.addEventListener("click", () => {
-        stopAutoplay();
-        update(i);
-        setTimeout(startAutoplay, 5000);
-      });
-      indicatorsContainer.appendChild(indicator);
-    });
-  }
-
-  const indicators = Array.from(
-    indicatorsContainer?.querySelectorAll(".carousel-indicator") || []
-  );
+  // No indicators by default; if you add markup later, we can wire them up.
 
   const update = (index) => {
     if (isAnimating) return;
@@ -869,10 +1575,7 @@ if (subtitle) {
       }
     });
 
-    // Update indicators
-    indicators.forEach((ind, i) => {
-      ind.classList.toggle("active", i === active);
-    });
+    // (no indicators to update by default)
 
     setTimeout(() => {
       isAnimating = false;
@@ -898,22 +1601,7 @@ if (subtitle) {
   update(0);
   startAutoplay();
 
-  // Navigation buttons
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      stopAutoplay();
-      update(active - 1);
-      setTimeout(startAutoplay, 5000); // Resume after 5 seconds
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      stopAutoplay();
-      update(active + 1);
-      setTimeout(startAutoplay, 5000); // Resume after 5 seconds
-    });
-  }
+  // Optional prev/next controls not present in markup — navigation is still possible via keyboard, touch, or clicking cards
 
   // Keyboard navigation
   window.addEventListener("keydown", (e) => {
@@ -1509,15 +2197,46 @@ const currentTheme =
 document.documentElement.setAttribute("data-theme", currentTheme);
 
 if (themeToggle) {
-  themeToggle.addEventListener("click", () => {
+  themeToggle.addEventListener("click", async (event) => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
     const newTheme = currentTheme === "dark" ? "light" : "dark";
 
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
+    // Get button position for ripple effect
+    const rect = themeToggle.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
 
-    // Show toast notification
-    showToast("success", "Theme Changed", `Switched to ${newTheme} mode`);
+    // Calculate position as percentage of viewport
+    const rippleX = (x / window.innerWidth) * 100;
+    const rippleY = (y / window.innerHeight) * 100;
+
+    // Set CSS variables for ripple position
+    document.documentElement.style.setProperty("--ripple-x", `${rippleX}%`);
+    document.documentElement.style.setProperty("--ripple-y", `${rippleY}%`);
+
+    // Check if View Transitions API is supported
+    if (document.startViewTransition) {
+      // Add class for ripple effect
+      document.documentElement.classList.add("theme-ripple");
+
+      const transition = document.startViewTransition(() => {
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+      });
+
+      // Remove ripple class after transition
+      try {
+        await transition.finished;
+      } finally {
+        document.documentElement.classList.remove("theme-ripple");
+      }
+    } else {
+      // Fallback for browsers without View Transitions API
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+    }
+
+    // toast removed: theme change notification disabled
   });
 }
 
@@ -1529,71 +2248,105 @@ prefersDarkScheme.addEventListener("change", (e) => {
   }
 });
 
-// ===== Toast Notification System =====
-const toastContainer = document.getElementById("toastContainer");
-let toastId = 0;
+// ===== Custom Circular Cursor =====
+(function () {
+  // Do not enable on touch / coarse pointers or when user prefers reduced motion
+  const isCoarse =
+    window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  const reduceMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (isCoarse || reduceMotion) return;
 
-/**
- * Show a toast notification
- * @param {string} type - Type of toast: 'success', 'error', 'warning', 'info'
- * @param {string} title - Toast title
- * @param {string} message - Toast message
- * @param {number} duration - Duration in milliseconds (0 = permanent)
- */
-function showToast(type = "info", title = "", message = "", duration = 4000) {
-  if (!toastContainer) return;
-
-  const id = ++toastId;
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.setAttribute("role", "alert");
-  toast.setAttribute("data-toast-id", id);
-
-  const icons = {
-    success: "fas fa-check-circle",
-    error: "fas fa-exclamation-circle",
-    warning: "fas fa-exclamation-triangle",
-    info: "fas fa-info-circle",
-  };
-
-  toast.innerHTML = `
-    <i class="${icons[type]} toast-icon" aria-hidden="true"></i>
-    <div class="toast-content">
-      ${title ? `<div class="toast-title">${title}</div>` : ""}
-      ${message ? `<div class="toast-message">${message}</div>` : ""}
-    </div>
-    <button class="toast-close" aria-label="Close notification">
-      <i class="fas fa-times" aria-hidden="true"></i>
-    </button>
-  `;
-
-  toastContainer.appendChild(toast);
-
-  // Close button
-  const closeBtn = toast.querySelector(".toast-close");
-  closeBtn.addEventListener("click", () => removeToast(toast));
-
-  // Auto remove after duration
-  if (duration > 0) {
-    setTimeout(() => removeToast(toast), duration);
+  // Use existing cursor element if present in markup, otherwise create one
+  let cursor = document.querySelector(".custom-cursor");
+  if (!cursor) {
+    cursor = document.createElement("div");
+    cursor.className = "custom-cursor";
+    // create inner dot/outline so styles apply
+    const dot = document.createElement("div");
+    dot.className = "cursor-dot";
+    const outline = document.createElement("div");
+    outline.className = "cursor-outline";
+    cursor.appendChild(dot);
+    cursor.appendChild(outline);
+    document.body.appendChild(cursor);
+  } else {
+    // Ensure necessary children exist (in case markup was trimmed)
+    if (!cursor.querySelector(".cursor-dot")) {
+      const dot = document.createElement("div");
+      dot.className = "cursor-dot";
+      cursor.appendChild(dot);
+    }
+    if (!cursor.querySelector(".cursor-outline")) {
+      const outline = document.createElement("div");
+      outline.className = "cursor-outline";
+      cursor.appendChild(outline);
+    }
   }
 
-  return id;
-}
+  // Track positions
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let cursorX = mouseX;
+  let cursorY = mouseY;
+  const speed = 0.16; // easing speed
 
-function removeToast(toast) {
-  if (!toast) return;
+  // Pointer move updates target coords
+  const onPointerMove = (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.opacity = "1";
+  };
 
-  toast.classList.add("removing");
-  setTimeout(() => {
-    if (toast.parentNode) {
-      toast.parentNode.removeChild(toast);
-    }
-  }, 300);
-}
+  document.addEventListener("pointermove", onPointerMove);
+
+  // Animation loop
+  const loop = () => {
+    cursorX += (mouseX - cursorX) * speed;
+    cursorY += (mouseY - cursorY) * speed;
+    cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+
+  // Press/click feedback
+  // use `active` class for pressed state so it matches CSS
+  document.addEventListener("pointerdown", () =>
+    cursor.classList.add("active")
+  );
+  document.addEventListener("pointerup", () =>
+    cursor.classList.remove("active")
+  );
+
+  // Hover states for interactive elements
+  const interactiveSelector =
+    "a, button, input, textarea, select, label, [role=button], .btn, .nav-links li";
+  // use `hover` class (matches .custom-cursor.hover in CSS)
+  const setHover = () => cursor.classList.add("hover");
+  const removeHover = () => cursor.classList.remove("hover");
+
+  const setInteractiveListeners = () => {
+    document.querySelectorAll(interactiveSelector).forEach((el) => {
+      el.addEventListener("pointerenter", setHover);
+      el.addEventListener("pointerleave", removeHover);
+    });
+  };
+
+  // Initial attach and observe for dynamic content
+  setInteractiveListeners();
+  const mo = new MutationObserver(() => setInteractiveListeners());
+  mo.observe(document.body, { childList: true, subtree: true });
+
+  // Hide cursor when leaving window
+  document.addEventListener("pointerleave", () => (cursor.style.opacity = "0"));
+  document.addEventListener("pointerenter", () => (cursor.style.opacity = "1"));
+})();
+
+// Toast notification system removed (toasts fully disabled)
 
 // ===== Contact Form Validation and Submission =====
-const contactForm = document.getElementById("contactForm");
+const contactForm = safeQuerySelector("#contactForm");
 
 if (contactForm) {
   const nameInput = contactForm.querySelector("#name");
@@ -1664,11 +2417,8 @@ if (contactForm) {
     );
 
     if (!isNameValid || !isEmailValid || !isMessageValid) {
-      showToast(
-        "error",
-        "Validation Error",
-        "Please fix the errors in the form"
-      );
+      // toast removed: validation feedback
+      console.warn("Validation Error: Please fix the errors in the form");
       return;
     }
 
@@ -1690,11 +2440,9 @@ if (contactForm) {
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Success
-      showToast(
-        "success",
-        "Message Sent!",
-        "Thank you for your message. I'll get back to you soon!"
+      // Success (toast removed)
+      console.info(
+        "Message Sent: Thank you for your message. I'll get back to you soon!"
       );
       contactForm.reset();
 
@@ -1707,12 +2455,11 @@ if (contactForm) {
       // Log form data (in production, send to your backend)
       console.log("Form submitted:", formData);
     } catch (error) {
-      showToast(
-        "error",
-        "Submission Failed",
-        "Something went wrong. Please try again later."
+      // Submission failure (toast removed)
+      console.error(
+        "Submission Failed: Something went wrong. Please try again later.",
+        error
       );
-      console.error("Form submission error:", error);
     } finally {
       submitBtn.classList.remove("loading");
       submitBtn.disabled = false;
@@ -1844,11 +2591,10 @@ function copyToClipboard(text) {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        showToast("success", "Copied!", "Text copied to clipboard");
+        console.info("Copied: text copied to clipboard");
       })
       .catch((err) => {
         console.error("Failed to copy:", err);
-        showToast("error", "Copy Failed", "Could not copy to clipboard");
       });
   } else {
     // Fallback for older browsers
@@ -1860,9 +2606,9 @@ function copyToClipboard(text) {
     textArea.select();
     try {
       document.execCommand("copy");
-      showToast("success", "Copied!", "Text copied to clipboard");
+      console.info("Copied: text copied to clipboard");
     } catch (err) {
-      showToast("error", "Copy Failed", "Could not copy to clipboard");
+      console.error("Copy Failed: Could not copy to clipboard", err);
     }
     document.body.removeChild(textArea);
   }
@@ -1870,7 +2616,7 @@ function copyToClipboard(text) {
 
 // ===== Online/Offline Detection =====
 window.addEventListener("online", () => {
-  showToast("success", "Back Online", "Your connection has been restored");
+  console.info("Back Online: connection restored");
 });
 
 // ===== Code-view: random loader (HTML/CSS/JS) and copy button =====
@@ -2036,7 +2782,57 @@ window.addEventListener("online", () => {
 setTimeout(() => {
   const hasVisited = sessionStorage.getItem("hasVisited");
   if (!hasVisited) {
-    showToast("info", "Welcome! 👋", "Thanks for visiting my portfolio");
+    // welcome toast removed
     sessionStorage.setItem("hasVisited", "true");
   }
 }, 1500);
+
+// ===== Enhanced Hover Effects for Cards =====
+// Add smooth hover blur effects for project cards and stat cards
+(function () {
+  // Enhanced hover for stat cards
+  const statCards = safeQuerySelectorAll(".stat-card");
+  const aboutStats = safeQuerySelector(".about-stats");
+
+  if (statCards.length > 0 && aboutStats) {
+    statCards.forEach((card) => {
+      card.addEventListener("mouseenter", function () {
+        // Add hover class to parent for better control
+        aboutStats.classList.add("has-hover");
+        this.classList.add("is-hovered");
+      });
+
+      card.addEventListener("mouseleave", function () {
+        aboutStats.classList.remove("has-hover");
+        this.classList.remove("is-hovered");
+      });
+    });
+  }
+
+  // Enhanced hover for project options
+  const projectOptions = safeQuerySelectorAll(".project-option");
+  const expandingCards = safeQuerySelector(".expanding-cards");
+
+  if (projectOptions.length > 0 && expandingCards) {
+    projectOptions.forEach((option) => {
+      option.addEventListener("mouseenter", function () {
+        // Only apply blur effect if card is not active
+        if (!this.classList.contains("active")) {
+          expandingCards.classList.add("has-hover");
+          this.classList.add("is-hovered");
+        }
+      });
+
+      option.addEventListener("mouseleave", function () {
+        expandingCards.classList.remove("has-hover");
+        this.classList.remove("is-hovered");
+      });
+    });
+  }
+
+  // Add smooth performance optimization
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // Disable hover effects for users who prefer reduced motion
+    document.body.classList.add("reduce-motion");
+  }
+})();
