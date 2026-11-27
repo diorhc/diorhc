@@ -1,0 +1,78 @@
+---
+import type { Lang } from "@/data/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { setSSRLang } from "@/lib/store";
+import { UtilityBar } from "@/components/UtilityBar";
+import { SideNav } from "@/components/SideNav";
+import { MobileDock } from "@/components/MobileDock";
+import { ToastViewport } from "@/components/ToastViewport";
+import { ScrollChrome } from "@/components/ScrollChrome";
+import { HeroSection } from "@/components/HeroSection";
+import { AboutSection } from "@/components/AboutSection";
+import { ProjectsBento } from "@/components/ProjectsBento";
+import { ReviewsSection } from "@/components/ReviewsSection";
+import { SkillsGrid } from "@/components/SkillsGrid";
+import {
+  ContactHeader,
+  ContactLinksAndFooter,
+  SiteFooter,
+} from "@/components/ContactHeaderAndLinks";
+import VoxelGuestbook3D from "@/components/VoxelGuestbook3D";
+import { PROJECTS } from "@/data/projects";
+import { DEFAULT_GF_RATINGS } from "@/data/reviews";
+import { fetchRepoStarsAtBuild } from "@/lib/github";
+import { fetchGreasyForkStatsAtBuild } from "@/lib/greasyfork";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+// Islands below are server-rendered in this page's language.
+setSSRLang(lang);
+
+// Live numbers are fetched once at build (and on the daily scheduled deploy),
+// so the HTML already holds them; the GitHub API is never called by visitors.
+const [stars, gfStats] = await Promise.all([
+  fetchRepoStarsAtBuild(
+    PROJECTS.map((p) => p.repoName).filter((r): r is string => Boolean(r))
+  ),
+  fetchGreasyForkStatsAtBuild(),
+]);
+const gf = gfStats ?? DEFAULT_GF_RATINGS;
+const builtAt = new Date().toISOString();
+---
+
+<BaseLayout lang={lang}>
+  <ScrollChrome client:idle />
+  <UtilityBar client:load />
+  <SideNav client:idle />
+  <MobileDock client:idle />
+  <ToastViewport client:idle />
+
+  <main id="main-content">
+    <HeroSection client:load />
+    <AboutSection
+      client:idle
+      initialInstalls={gf.installs}
+      totalStars={Object.values(stars).reduce((a, b) => a + b, 0)}
+    />
+    <ProjectsBento client:idle stars={stars} />
+    <SkillsGrid client:idle />
+    <ReviewsSection client:idle initialStats={gf} />
+
+    <section
+      id="contact"
+      aria-labelledby="contact-title"
+      class="relative pt-20 pb-12 lg:pb-16"
+    >
+      <div class="mx-auto w-full max-w-[920px] px-5 sm:px-7">
+        <ContactHeader client:idle />
+        <!-- Hydrates UI immediately with active language, while Three.js loads via dynamic import() on scroll -->
+        <VoxelGuestbook3D client:idle />
+        <ContactLinksAndFooter client:idle />
+      </div>
+    </section>
+  </main>
+  <SiteFooter client:idle builtAt={builtAt} />
+</BaseLayout>

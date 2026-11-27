@@ -1,0 +1,9 @@
+name = "diorhc-3d-guestbook"
+main = "src/index.ts"
+compatibility_date = "2025-05-01"
+
+# Create your KV namespace and replace the placeholder ID below:
+#   npx wrangler kv namespace create GUESTBOOK_KV
+[[kv_namespaces]]
+binding = "GUESTBOOK_KV"
+id = "7c0318f07a1a4c20a3e84579bc6a4e4c"

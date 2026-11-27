@@ -1,0 +1,18 @@
+{
+  "name": "Diorhc — Portfolio",
+  "short_name": "Diorhc",
+  "description": "Diorhc — Full-stack developer, script author, and open-source contributor.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

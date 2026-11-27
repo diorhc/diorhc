@@ -1,0 +1,198 @@
+---
+import "@/styles/global.css";
+import { Font } from "astro:assets";
+import { withBase } from "@/lib/utils";
+import { translations, type Lang } from "@/data/i18n";
+
+interface Props {
+  lang?: Lang;
+  title?: string;
+  description?: string;
+  /** Path under the language root, e.g. "projects/ytdl/" ("" = home). */
+  path?: string;
+  /** Extra schema.org nodes for this page, added to the Person node. */
+  schema?: Record<string, unknown>[];
+}
+
+const { lang = "ru", path = "", schema } = Astro.props;
+const {
+  title = translations[lang].meta.title,
+  description = translations[lang].meta.description,
+} = Astro.props;
+
+const siteUrl = "https://diorhc.github.io/diorhc/";
+const pageUrls: Record<Lang, string> = {
+  ru: `${siteUrl}${path}`,
+  en: `${siteUrl}en/${path}`,
+};
+// Subpages are static Astro HTML: the language switch must load the other
+// URL instead of re-rendering islands in place (see store.ts).
+const fixedLang = path !== "";
+const canonicalUrl = pageUrls[lang];
+const ogLocale = lang === "en" ? "en_US" : "ru_RU";
+const ogLocaleAlt = lang === "en" ? "ru_RU" : "en_US";
+const skipLabel = lang === "en" ? "Skip to content" : "Перейти к содержимому";
+const ogImageUrl = "https://diorhc.github.io/diorhc/og-image.png";
+const swUrl = withBase("sw.js");
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      name: "Dior E (diorhc)",
+      url: lang === "en" ? `${siteUrl}en/` : siteUrl,
+      sameAs: [
+        "https://github.com/diorhc",
+        "https://greasyfork.org/ru/users/1473734-diorhc",
+        "https://boosty.to/diore",
+      ],
+      jobTitle: "Full-Stack Developer & Script Author",
+      knowsAbout: ["JavaScript", "TypeScript", "Python", "Rust", "Astro", "React"],
+    },
+    ...(schema ?? [
+      {
+        "@type": "SoftwareSourceCode",
+        name: "YouTube +",
+        codeRepository: "https://github.com/diorhc/YTP",
+        programmingLanguage: "JavaScript",
+      },
+      {
+        "@type": "SoftwareSourceCode",
+        name: "Telegram +",
+        codeRepository: "https://github.com/diorhc/TGP",
+        programmingLanguage: "JavaScript",
+      },
+      {
+        "@type": "SoftwareSourceCode",
+        name: "YTDL",
+        codeRepository: "https://github.com/diorhc/YTDL",
+        programmingLanguage: "Rust",
+      },
+    ]),
+  ],
+};
+---
+
+<!doctype html>
+<html lang={lang} data-theme="dark" data-lang-fixed={fixedLang ? "" : undefined}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta
+      name="keywords"
+      content="diorhc, developer, JavaScript, TypeScript, Python, Rust, UserScript, Telegram Bot, Astro, portfolio"
+    />
+    <meta name="author" content="Dior E (diorhc)" />
+    <meta name="theme-color" content="#09090b" />
+    <meta name="color-scheme" content="dark light" />
+
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="ru" href={pageUrls.ru} />
+    <link rel="alternate" hreflang="en" href={pageUrls.en} />
+    <link rel="alternate" hreflang="x-default" href={pageUrls.ru} />
+    <link rel="icon" type="image/svg+xml" href={withBase("favicon.svg")} />
+    <link rel="manifest" href={withBase("manifest.json")} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:locale:alternate" content={ogLocaleAlt} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Self-hosted fonts (see astro.config.mjs); preload only what the
+         first screen needs: body text and the hero heading. -->
+    <Font
+      cssVariable="--font-inter"
+      preload={[{ weight: "400", subset: lang === "en" ? "latin" : "cyrillic" }]}
+    />
+    <Font cssVariable="--font-space-grotesk" preload />
+    <Font cssVariable="--font-jetbrains-mono" />
+    <Font cssVariable="--font-doto" />
+
+    <title>{title}</title>
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <!-- Anti-FOUC Theme Init -->
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = saved || (prefersDark ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute("content", theme === "light" ? "#fafafa" : "#09090b");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a
+      href="#main-content"
+      class="fixed -top-24 left-4 z-50 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-fg)] transition-all focus:top-4"
+    >
+      {skipLabel}
+    </a>
+
+    <slot />
+
+    <script is:inline>
+      if (window.location.hash && window.location.hash.length > 1) {
+        window.addEventListener(
+          "load",
+          function () {
+            var target = document.getElementById(window.location.hash.slice(1));
+            if (target) {
+              setTimeout(function () {
+                target.scrollIntoView({ behavior: "auto", block: "start" });
+              }, 80);
+            }
+          },
+          { once: true }
+        );
+      }
+    </script>
+
+    <script is:inline define:vars={{ swUrl }}>
+      // Production only: on localhost the worker's stale-while-revalidate cache
+      // would keep serving old dev/preview bundles after a rebuild.
+      if ("serviceWorker" in navigator) {
+        if (location.protocol === "https:") {
+          window.addEventListener(
+            "load",
+            function () {
+              navigator.serviceWorker.register(swUrl).catch(function () {});
+            },
+            { once: true }
+          );
+        } else {
+          // Drop a worker an earlier build registered on localhost.
+          navigator.serviceWorker
+            .getRegistrations()
+            .then(function (regs) {
+              regs.forEach(function (reg) {
+                reg.unregister();
+              });
+            })
+            .catch(function () {});
+        }
+      }
+    </script>
+  </body>
+</html>

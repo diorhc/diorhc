@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+site/node_modules/
+worker/node_modules/
+
+# Build outputs & caches
+site/dist/
+site/.astro/
+worker/.wrangler/
+
+# Local Claude Code / editor tooling
+.claude/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local archives / backups
+*.zip
+
+# OS & logs
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
